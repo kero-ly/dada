@@ -1,0 +1,25 @@
+{
+  "manifest_version": "0.1-draft",
+  "id": "jinyichen-esp32-c3-lcd-2.4",
+  "status": "purchased-unverified",
+  "soc": "esp32c3",
+  "hardware_revision": null,
+  "flash_mb": null,
+  "usb_bridge": null,
+  "display": {
+    "controller": "ST7789",
+    "width": 240,
+    "height": 320,
+    "bus": "spi",
+    "evidence": "seller-listing",
+    "pins": null
+  },
+  "touch": {
+    "advertised_type": "capacitive",
+    "controller": null,
+    "bus": null,
+    "pins": null
+  },
+  "verified_capabilities": [],
+  "source_url": "https://item.taobao.com/item.htm?id=979558667986&skuId=6104366863243"
+}

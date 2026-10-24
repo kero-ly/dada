@@ -1,0 +1,4 @@
+# Conservative bootstrap settings, not a claim about the board's Flash size.
+CONFIG_ESPTOOLPY_FLASHSIZE_2MB=y
+CONFIG_PARTITION_TABLE_SINGLE_APP=y
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
