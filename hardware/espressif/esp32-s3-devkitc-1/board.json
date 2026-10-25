@@ -1,0 +1,22 @@
+{
+  "manifest_version": "0.1",
+  "id": "espressif-esp32-s3-devkitc-1",
+  "status": "planned",
+  "soc": "esp32s3",
+  "hardware_revision": null,
+  "flash_mb": 16,
+  "psram_mb": 8,
+  "usb": {
+    "mode": "serial-jtag",
+    "vid_pid": null
+  },
+  "display": null,
+  "touch": null,
+  "verified_capabilities": [],
+  "provenance": {
+    "soc": "vendor-doc",
+    "flash_mb": "vendor-doc",
+    "psram_mb": "vendor-doc"
+  },
+  "source_url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/index.html"
+}
