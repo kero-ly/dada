@@ -1,1 +1,5 @@
-idf_component_register(SRCS "main.c" INCLUDE_DIRS "." REQUIRES log)
+idf_component_register(
+    SRCS "main.c"
+    INCLUDE_DIRS "."
+    REQUIRES board dada_contracts log
+)

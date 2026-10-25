@@ -1,4 +1,12 @@
-# Conservative bootstrap settings, not a claim about the board's Flash size.
-CONFIG_ESPTOOLPY_FLASHSIZE_2MB=y
+# Conservative bootstrap settings for the reference board.
+# Flash size follows hardware/jinyichen/esp32-c3-lcd-2.4/board.json (measured: 4 MB).
+# TODO(adr-0002): generate this file from the manifest instead of duplicating it.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_PARTITION_TABLE_SINGLE_APP=y
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# The board's only USB port is the native USB-Serial/JTAG controller; UART0 is
+# routed to header pins that are not soldered on the reference board. Sending
+# the console to USB is therefore the only way to see logs.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=n
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
