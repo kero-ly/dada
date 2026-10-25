@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kero-ly/dada/contracts/schema/board.schema.json",
+  "title": "dada board manifest",
+  "description": "Single source of truth for one board. See docs/adr/0002-board-manifest.md. Unknown values must stay null; guessing is forbidden.",
+  "type": "object",
+  "required": ["manifest_version", "id", "status", "soc", "verified_capabilities", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "enum": ["0.1"]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$",
+      "minLength": 3,
+      "maxLength": 63,
+      "description": "Must equal '<vendor>-<board-dir>' relative to hardware/<vendor>/<board-dir>/."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "purchased", "verified", "deprecated"]
+    },
+    "soc": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{2,16}$"
+    },
+    "hardware_revision": {
+      "type": ["string", "null"]
+    },
+    "flash_mb": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "psram_mb": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "usb": {
+      "type": ["object", "null"],
+      "required": ["mode"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["serial-jtag", "otg", "bridge", "none"]
+        },
+        "vid_pid": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{4}$"
+        }
+      }
+    },
+    "display": {
+      "type": ["object", "null"],
+      "required": ["controller", "width", "height", "bus"],
+      "additionalProperties": false,
+      "properties": {
+        "controller": { "type": "string", "minLength": 2 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "bus": { "type": "string", "enum": ["spi", "i2c", "parallel", "rgb"] },
+        "pins": {
+          "type": ["object", "null"],
+          "additionalProperties": {
+            "type": ["integer", "null"],
+            "minimum": -1,
+            "maximum": 63
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "touch": {
+      "type": ["object", "null"],
+      "required": ["controller", "bus"],
+      "additionalProperties": false,
+      "properties": {
+        "controller": { "type": "string", "minLength": 2 },
+        "bus": { "type": "string", "enum": ["i2c", "spi"] },
+        "address": {
+          "type": ["string", "null"],
+          "pattern": "^0x[0-9A-Fa-f]{2}$"
+        },
+        "pins": {
+          "type": ["object", "null"],
+          "additionalProperties": {
+            "type": ["integer", "null"],
+            "minimum": -1,
+            "maximum": 63
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "verified_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "display",
+          "input",
+          "touch",
+          "audio",
+          "storage",
+          "time",
+          "usb-serial-jtag",
+          "wifi",
+          "ble"
+        ]
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "JSON path -> evidence level. Every non-null leaf of the manifest must be covered.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["seller-listing", "vendor-doc", "vendor-schematic", "measured"]
+      }
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    }
+  }
+}

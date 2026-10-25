@@ -1,0 +1,2 @@
+# Tools dependencies (CI and local). Keep this list short and pinned.
+jsonschema==4.23.0

@@ -1,0 +1,32 @@
+name: Board manifests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tool dependencies
+        run: pip install -r tools/requirements.txt
+
+      # Every manifest under hardware/**/board.json must match the schema and the
+      # semantic rules from docs/adr/0002-board-manifest.md.
+      - name: Validate board manifests
+        run: python tools/validate_manifests.py
+
+      # Proves the code generator still works for every board, even when a board
+      # manifest is only a draft.
+      - name: Generate board headers (dry run)
+        run: python tools/gen_board_config.py --all -o "$RUNNER_TEMP/board-config"
