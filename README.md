@@ -16,13 +16,16 @@ This repository is at the **bootstrap** stage. What exists today:
 - ✅ ESP-IDF project skeleton (`firmware/`) that boots and prints one log line.
 - ✅ Directory structure, board manifest draft, CI build workflow, collaboration templates.
 - ✅ Architecture decisions recorded as ADRs ([`docs/adr/`](docs/adr/README.md)).
-- ✅ First board's hardware **verified out-of-tree** (display, touch, USB, flash) — see
+- ✅ Display (ST7789) and touch (CST836U) drivers behind the capability contracts, plus a
+  board binding that reads the generated manifest header.
+- ✅ First board **bring-up passes on ESP-IDF v5.4.2** — colour bars render and touch answers
+  on real hardware, with no pin number anywhere in the app code. See
   [`tests/hardware/records/`](tests/hardware/records/).
 
 What does **not** exist yet:
 
-- ❌ No display, touch or platform drivers inside this repository.
-- ❌ No runtime, no app IR compiler, no focus-clock app.
+- ❌ No runtime (capability registry / lifecycle), no app IR compiler, no focus-clock app.
+- ❌ No second board, so the abstraction is still unproven.
 - ❌ No license file yet (see [ADR 0004](docs/adr/0004-license.md)).
 
 The first board is a Jinyichen ESP32-C3 board with a 2.4" 240×320 touch panel.

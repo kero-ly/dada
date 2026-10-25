@@ -1,10 +1,14 @@
 # 金逸晨 ESP32-C3 2.4 寸触摸开发板
 
-**状态：硬件已实测（2026-10-24），驱动尚未进入本仓库。**
+**状态：硬件已实测，驱动已进仓库，并在 ESP-IDF v5.4.2 下跑通（2026-10-25）。**
 
-> 本次验证使用的是 PlatformIO + Arduino 工具链，**不是** ESP-IDF v5.4.2 基线。
-> 结论只覆盖硬件本身：板子、屏、触摸、USB 都正常。
-> 在 ESP-IDF 下能否跑通显示与触摸，仍需单独验证，不能由本记录推断。
+驱动实现契约、不含板级知识：`components/display_st7789`、`components/touch_cst836u`；
+本目录的 `board/` 是板级绑定，引脚来自构建期由 `board.json` 生成的
+`dada_board_config.h`。验证记录见
+[`tests/hardware/records/2026-10-25-idf-display-touch.md`](../../../tests/hardware/records/2026-10-25-idf-display-touch.md)。
+
+> 更早一次（2026-10-24）的验证走的是 PlatformIO + Arduino，只用于判定硬件好坏；
+> 结论以 ESP-IDF 那次为准。
 
 ## 已核验事实
 
@@ -59,6 +63,6 @@ TFT_eSPI 2.5.43 + LVGL 8.4.0）。
 
 ## 待办
 
-- [ ] 在 ESP-IDF v5.4.2 下复现显示与触摸
-- [ ] 确认 ST7789 色序（RGB/BGR）与偏移（Arduino 下 rotation 0 正常）
+- [x] 在 ESP-IDF v5.4.2 下复现显示与触摸
+- [ ] 确认 ST7789 色序（RGB/BGR）与偏移（色带测试无法判断，需要真实界面）
 - [ ] PCB 修订号：板上未标注，暂记 `null`
