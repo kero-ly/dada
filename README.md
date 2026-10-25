@@ -1,55 +1,105 @@
 # dada · 搭搭
 
-搭搭：连接应用与硬件的开源平台。一次开发，自由组合。让应用通过统一能力接口使用不同的开发板与外设。
+**An open platform that connects applications to hardware — write once, compose freely.**
 
-项目名：**dada（搭搭）**，GitHub 仓库名：`dada`。当前处于工程初始化阶段。
+Apps talk to boards through a small set of **capability contracts**, so the same app can run on
+different screens, MCUs and accessories without rewriting the app.
 
-**当前首板：金逸晨 ESP32-C3 2.4 寸带触摸开发板。** 首个目标应用是离线触摸番茄钟。仓库现在只包含串口启动骨架，不包含已经适配好的显示、触摸或番茄钟功能。
+> 中文说明见 [README.zh-CN.md](README.zh-CN.md)。
 
-## 快速开始
+---
 
-1. 阅读 [开发环境与构建](docs/development.md)，安装并激活 ESP-IDF **v5.4.2**（初始基线，接入卖家驱动后评估兼容性）。
-2. 在仓库根目录运行：
+## Status (be honest about it)
+
+This repository is at the **bootstrap** stage. What exists today:
+
+- ✅ ESP-IDF project skeleton (`firmware/`) that boots and prints one log line.
+- ✅ Directory structure, board manifest draft, CI build workflow, collaboration templates.
+- ✅ Architecture decisions recorded as ADRs ([`docs/adr/`](docs/adr/README.md)).
+- ✅ First board's hardware **verified out-of-tree** (display, touch, USB, flash) — see
+  [`tests/hardware/records/`](tests/hardware/records/).
+
+What does **not** exist yet:
+
+- ❌ No display, touch or platform drivers inside this repository.
+- ❌ No runtime, no app IR compiler, no focus-clock app.
+- ❌ No license file yet (see [ADR 0004](docs/adr/0004-license.md)).
+
+The first board is a Jinyichen ESP32-C3 board with a 2.4" 240×320 touch panel.
+The first target app is an offline pomodoro clock.
+
+## Quick start
 
 ```sh
+# requires ESP-IDF v5.4.2 (baseline; enforced by firmware/CMakeLists.txt)
 idf.py -C firmware set-target esp32c3
 idf.py -C firmware build
 ```
 
-3. 确认板卡、USB 烧录方式及原厂固件备份需求后，再按开发文档烧录。编译不需要插开发板。
+Building does not require the board. Flashing does — see
+[`tests/hardware/bringup.md`](tests/hardware/bringup.md).
 
-## 工程结构
+## Repository layout
 
 ```text
-apps/                         应用业务；目前只有 focus-clock 的范围说明
-runtime/                      平台公共接口与运行服务（待实现）
-hardware/jinyichen/esp32-c3-lcd-2.4/
-                              首板资料、硬件清单与验证记录
-components/                   可复用外设驱动（待接入）
-contracts/                    清单与能力契约说明（草案）
-connectors/                   可选 AI / 外部服务适配（待实现）
-firmware/                     ESP-IDF 集成工程，当前运行串口 smoke 程序
-tools/                        主机工具的后续扩展位置
-tests/                        实机验收步骤与记录模板
-docs/                         开发文档、架构图与实施记录
-.github/                      编译 CI、Issue 与 PR 模板
+apps/         applications (business logic only; no GPIOs, no board names)
+runtime/      platform services and capability registry          (not implemented)
+components/   reusable drivers implementing the contracts        (not implemented)
+contracts/    capability contracts + JSON schemas                (draft)
+hardware/     per-board manifests: pins, init data, provenance
+connectors/   optional AI / external service adapters            (not implemented)
+firmware/     ESP-IDF integration project
+tools/        host-side tooling (manifest validation, codegen, verify)
+tests/        hardware bring-up steps and verification records
+docs/         ADRs, glossary, development notes
 ```
 
-依赖方向：**应用 → 平台能力 API → 板级适配 / 可复用驱动 → ESP-IDF → 硬件**。
-`firmware/` 负责把选定应用和板级实现组合起来；主机工具负责构建交付，不驻留设备。
-当前只有一个集成目标，不提前实现包市场、依赖解析器或通用运行时。
+Dependency direction: **app → contracts → components / board binding → ESP-IDF → hardware.**
 
-## 当前状态与下一步
+## Design principles
 
-- [x] C3 原生 ESP-IDF 目录与串口 smoke 入口。
-- [x] GitHub Actions 编译工作流及协作模板。
-- [ ] 首次 CI 构建通过并保存产物。
-- [ ] 获取卖家原理图、Flash 容量、触摸型号、引脚表和源码许可证。
-- [ ] 实机验证串口烧录、显示、触摸，再实现番茄钟。
-- [ ] 第二套硬件验证同一应用的可迁移性。
+1. **Contracts are sink-level.** A display contract moves pixels and controls a backlight; it
+   does *not* offer drawing primitives. UI frameworks live above the contract and stay
+   replaceable. → [ADR 0001](docs/adr/0001-layering.md)
+2. **The board manifest is the single source of truth**, validated in CI and compiled into a C
+   header at build time. Unknown values stay `null`; guessing is forbidden.
+   → [ADR 0002](docs/adr/0002-board-manifest.md)
+3. **A board is "supported" only if a machine-readable verification report exists.**
+   → [ADR 0003](docs/adr/0003-verification.md)
+4. **Apps are declarative.** YAML is the IR; a block editor or a visual designer can target the
+   same IR later. → [ADR 0005](docs/adr/0005-app-ir.md)
 
-商品页标注 ST7789、240×320；这些是**卖家声明，尚未实测**。未知引脚保持空值，当前代码不初始化外设。
+## Roadmap
 
-原 [4+1 架构图](docs/architecture/platform-4plus1.html) 保留长期设计讨论，其中 S3 优先采购计划已被本次 C3 决策取代。当前实施以本文和 [C3 工程基线](docs/architecture/c3-bootstrap.md) 为准。
+| Stage | Goal | Exit criterion |
+| --- | --- | --- |
+| P0 | one board + one app, end to end | a stranger sees a working pomodoro within 10 minutes |
+| P1 | second board (ESP32-S3 + separate panel + separate touch) | the same app runs unmodified |
+| P2 | third-party boards | an outside contributor submits a board + verify report |
+| P3 | app ecosystem | the first declarative app written by someone else is merged |
 
-团队提交要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。开源许可证尚未确定；公开仓库不等于授予开源许可，请在正式对外发布前选定许可证，并核验引入的厂商源码授权。
+**Hard rule:** no general-purpose runtime, no package registry and no "supports N boards" claim
+before P1 is done. An abstraction designed against a single board is usually wrong.
+
+## Language policy
+
+English is the primary language for code, commit messages and issue templates.
+Documentation is bilingual: `X.md` (English) and `X.zh-CN.md` (Chinese). ADRs carry an English
+summary at the top and Chinese body.
+
+Machine translation is not used for published docs — better to have three good pages than thirty
+bad ones.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Two rules worth repeating here:
+
+- **Never copy code from a board vendor's package.** Seller sources usually ship without a
+  license; re-implement against the datasheet instead.
+- **New boards must include a verification report** produced by `dada verify`.
+
+## License
+
+Not selected yet — see [ADR 0004](docs/adr/0004-license.md) for the recommendation (Apache-2.0).
+Until a license file exists, this repository is "all rights reserved" and cannot be legally
+reused.
