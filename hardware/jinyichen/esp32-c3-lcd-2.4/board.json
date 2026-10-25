@@ -42,8 +42,12 @@
     "usb.mode": "measured",
     "usb.vid_pid": "measured",
     "display.controller": "vendor-schematic",
+    "display.width": "vendor-doc",
+    "display.height": "vendor-doc",
+    "display.bus": "vendor-schematic",
     "display.pins": "vendor-schematic",
     "touch.controller": "vendor-doc",
+    "touch.bus": "measured",
     "touch.address": "measured",
     "touch.pins": "vendor-schematic"
   },
