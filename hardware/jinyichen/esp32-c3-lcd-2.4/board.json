@@ -1,25 +1,51 @@
 {
-  "manifest_version": "0.1-draft",
+  "manifest_version": "0.1",
   "id": "jinyichen-esp32-c3-lcd-2.4",
-  "status": "purchased-unverified",
+  "status": "verified",
   "soc": "esp32c3",
   "hardware_revision": null,
-  "flash_mb": null,
-  "usb_bridge": null,
+  "flash_mb": 4,
+  "usb": {
+    "mode": "serial-jtag",
+    "vid_pid": "303A:1001"
+  },
   "display": {
     "controller": "ST7789",
     "width": 240,
     "height": 320,
     "bus": "spi",
-    "evidence": "seller-listing",
-    "pins": null
+    "pins": {
+      "sclk": 6,
+      "mosi": 7,
+      "dc": 10,
+      "rst": 8,
+      "cs": null,
+      "backlight": 0
+    },
+    "notes": "CS 在 PCB 上直接接 GND，控制器被固定选中，驱动需按无片选处理（null）"
   },
   "touch": {
-    "advertised_type": "capacitive",
-    "controller": null,
-    "bus": null,
-    "pins": null
+    "controller": "CST836U",
+    "bus": "i2c",
+    "address": "0x15",
+    "pins": {
+      "scl": 5,
+      "sda": 4,
+      "int": 3,
+      "rst": 2
+    }
   },
-  "verified_capabilities": [],
+  "verified_capabilities": ["usb-serial-jtag", "display", "touch"],
+  "provenance": {
+    "soc": "measured",
+    "flash_mb": "measured",
+    "usb.mode": "measured",
+    "usb.vid_pid": "measured",
+    "display.controller": "vendor-schematic",
+    "display.pins": "vendor-schematic",
+    "touch.controller": "vendor-doc",
+    "touch.address": "measured",
+    "touch.pins": "vendor-schematic"
+  },
   "source_url": "https://item.taobao.com/item.htm?id=979558667986&skuId=6104366863243"
 }

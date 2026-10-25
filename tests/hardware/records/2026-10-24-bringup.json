@@ -1,0 +1,35 @@
+{
+  "report_version": "0.1",
+  "board_id": "jinyichen-esp32-c3-lcd-2.4",
+  "firmware_git_sha": null,
+  "dada_version": null,
+  "toolchain": { "framework": "arduino", "flavor": "platformio-espressif32-6.5.0", "version": "arduino-esp32-3.2.14" },
+  "timestamp": "2026-10-24T21:00:00+08:00",
+  "chip": { "model": "esp32c3", "revision": "v0.4", "cores": 1, "clock_mhz": 160 },
+  "flash": { "size_mb": 4, "vendor": "XMC" },
+  "heap": { "free_bytes": 306916, "min_free_bytes": 280000 },
+  "usb": { "mode": "serial-jtag", "vid_pid": "303A:1001" },
+  "i2c": { "scl": 5, "sda": 4, "devices": ["0x15"] },
+  "display": {
+    "controller": "ST7789",
+    "width": 240,
+    "height": 320,
+    "test": "self-drawn-game",
+    "result": "pass"
+  },
+  "touch": {
+    "controller": "CST836U",
+    "address": "0x15",
+    "samples": null,
+    "points_detected": null,
+    "bbox": null,
+    "result": "pass"
+  },
+  "notes": [
+    "附送的 USB-C 线只有电源，必须换数据线",
+    "6P 排针出厂未焊",
+    "无扬声器、无麦克风、无音频电路",
+    "厂商源码包无许可证",
+    "本次验证未使用 ESP-IDF，不能推断 IDF 下可用"
+  ]
+}
