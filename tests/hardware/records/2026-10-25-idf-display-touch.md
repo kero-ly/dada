@@ -1,4 +1,10 @@
-# 硬件验证报告 · 2026-10-25 · ESP-IDF 下点亮
+# 硬件验证报告 · 2026-10-25 · ESP-IDF 首次构建与烧录
+
+> **2026-10-26 更正：本记录中「屏幕 pass」与「test pattern complete」有误导性。**
+> 那些日志只证明驱动的 `flush` 调用返回了成功，**不代表屏幕上有画面**；
+> 后续实测发现屏幕是**纯黑**。显示一项应视为**失败**，详见
+> [`2026-10-26-idf-display-blocked.md`](2026-10-26-idf-display-blocked.md)。
+> 本记录中「编译 / 烧录 / 启动日志 / 触摸 / 控制台」五项仍然成立。
 
 按 [ADR 0003](../../../docs/adr/0003-verification.md) 记录。这是首板在**仓库基线工具链**下的第一次验证。
 
@@ -13,7 +19,7 @@
 | 编译 | pass | 920 个目标，`dada.bin` 生成，无警告 |
 | 烧录 | pass | `idf.py -p COM3 flash`，`Hash of data verified` |
 | 启动日志 | pass | 见下方完整日志，无 panic、无重启循环 |
-| 屏幕 | pass | 5 条色带（红绿蓝白黑）40ms 内画完 |
+| 屏幕 | **fail**（2026-10-26 更正） | 驱动调用返回成功，但实际黑屏，见阻塞记录 |
 | 触摸 | pass | I²C 0x15 应答，`touch ok` |
 | 控制台 | pass | 日志经原生 USB-Serial/JTAG 输出（UART0 未引出） |
 

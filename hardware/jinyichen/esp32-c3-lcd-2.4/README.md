@@ -1,14 +1,16 @@
 # 金逸晨 ESP32-C3 2.4 寸触摸开发板
 
-**状态：硬件已实测，驱动已进仓库，并在 ESP-IDF v5.4.2 下跑通（2026-10-25）。**
+**状态：硬件已实测；ESP-IDF 下能编译、烧录、触摸可用，但显示尚未点亮（2026-10-26）。**
 
 驱动实现契约、不含板级知识：`components/display_st7789`、`components/touch_cst836u`；
 本目录的 `board/` 是板级绑定，引脚来自构建期由 `board.json` 生成的
 `dada_board_config.h`。验证记录见
 [`tests/hardware/records/2026-10-25-idf-display-touch.md`](../../../tests/hardware/records/2026-10-25-idf-display-touch.md)。
 
-> 更早一次（2026-10-24）的验证走的是 PlatformIO + Arduino，只用于判定硬件好坏；
-> 结论以 ESP-IDF 那次为准。
+> **显示仍有阻塞**：同一块板、同一组引脚，Arduino + TFT_eSPI 固件显示正常，ESP-IDF 固件纯黑。
+> 已排除引脚、背光、初始化序列、SPI 时钟/mode、IOMUX、esp_lcd 等假设，详见
+> [`tests/hardware/records/2026-10-26-idf-display-blocked.md`](../../../tests/hardware/records/2026-10-26-idf-display-blocked.md)。
+> 因此 ESP-IDF 侧的「显示」能力**不写入 verified_capabilities 的依据**尚不成立。
 
 ## 已核验事实
 
@@ -63,6 +65,6 @@ TFT_eSPI 2.5.43 + LVGL 8.4.0）。
 
 ## 待办
 
-- [x] 在 ESP-IDF v5.4.2 下复现显示与触摸
+- [ ] 在 ESP-IDF v5.4.2 下点亮屏幕（触摸已通过，显示阻塞中）
 - [ ] 确认 ST7789 色序（RGB/BGR）与偏移（色带测试无法判断，需要真实界面）
 - [ ] PCB 修订号：板上未标注，暂记 `null`
