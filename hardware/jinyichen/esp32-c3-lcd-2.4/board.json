@@ -35,7 +35,7 @@
       "rst": 2
     }
   },
-  "verified_capabilities": ["usb-serial-jtag", "display", "touch"],
+  "verified_capabilities": ["usb-serial-jtag", "display", "touch", "input", "time"],
   "provenance": {
     "soc": "measured",
     "flash_mb": "measured",

@@ -11,13 +11,14 @@ void app_main(void)
 {
     dada_display_t *display = NULL;
     dada_input_t *input = NULL;
-    dada_err_t err = board_init(&display, &input);
+    dada_time_t *time = NULL;
+    dada_err_t err = board_init(&display, &input, &time);
     if (err != DADA_OK) {
         ESP_LOGE(TAG, "board_init failed: %d", err);
         board_deinit(display, input);
         return;
     }
-    dada_app_services_t services = {.display = display, .input = input};
+    dada_app_services_t services = {.display = display, .input = input, .time = time};
     err = dada_app_start(&services);
     if (err == DADA_OK) {
         ESP_LOGI(TAG, "%s started (%ux%u)", DADA_APP_ID, display->width, display->height);

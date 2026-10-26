@@ -5,6 +5,7 @@
 #include "dada_board_config.h"
 #include "display_st7789.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "touch_cst836u.h"
 
 static const char *TAG = "board";
@@ -21,9 +22,35 @@ static const char *TAG = "board";
 #define DADA_BOARD_WIDTH DADA_BOARD_DISPLAY_W
 #define DADA_BOARD_HEIGHT DADA_BOARD_DISPLAY_H
 
-dada_err_t board_init(dada_display_t **display, dada_input_t **input)
+/* Monotonic milliseconds from the SoC timer: no RTC, no network needed. */
+static uint64_t board_monotonic_ms(void *ctx)
+{
+    (void)ctx;
+    return (uint64_t)(esp_timer_get_time() / 1000);
+}
+
+/* This board has no battery-backed RTC and no time source of its own. */
+static bool board_wall_clock(void *ctx, dada_datetime_t *out)
+{
+    (void)ctx;
+    (void)out;
+    return false;
+}
+
+static dada_time_t board_time = {
+    .ctx = NULL,
+    .monotonic_ms = board_monotonic_ms,
+    .wall_clock = board_wall_clock,
+};
+
+dada_err_t board_init(dada_display_t **display, dada_input_t **input,
+                      dada_time_t **time)
 {
     ESP_LOGI(TAG, "board %s (flash %d MB)", DADA_BOARD_ID, DADA_BOARD_FLASH_MB);
+
+    if (time) {
+        *time = &board_time;
+    }
 
     if (display) {
         display_st7789_config_t cfg = {

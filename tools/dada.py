@@ -34,7 +34,22 @@ def resolve_selection(board_id, app_id, root=ROOT):
     app = json.loads((app_dir / "app.json").read_text(encoding="utf-8-sig"))
     if app.get("id") != app_id or app.get("format") != "native-c-v1":
         raise ValueError("unsupported app manifest: " + app_id)
-    capabilities = {"display": bool(board.get("display")), "input": bool(board.get("touch"))}
+    # An explicit verified_capabilities list wins, because it records what was
+    # actually proven on hardware. Manifests that predate that field fall back
+    # to inferring from the sections they declare. "touch" implies input.
+    verified = set(board.get("verified_capabilities") or [])
+    if verified:
+        capabilities = {
+            "display": "display" in verified,
+            "input": "input" in verified or "touch" in verified,
+            "time": "time" in verified,
+        }
+    else:
+        capabilities = {
+            "display": bool(board.get("display")),
+            "input": bool(board.get("touch")),
+            "time": False,
+        }
     for required in app["requires"]:
         if not capabilities.get(required, False):
             raise ValueError("board lacks required capability: " + required)
