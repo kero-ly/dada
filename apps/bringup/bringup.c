@@ -143,6 +143,17 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
         return err;
     }
 
+    /* Storage self-check: the counter must survive a power cycle. */
+    if (services.storage) {
+        uint32_t boots = 0;
+        bool had = services.storage->get_u32(services.storage->ctx, "bringup.boots", &boots);
+        dada_err_t store_err = services.storage->set_u32(services.storage->ctx, "bringup.boots", boots + 1);
+        printf("bringup: storage %s (was %u, now %u) -> %d\n",
+               had ? "read" : "fresh", (unsigned)boots, (unsigned)(boots + 1), store_err);
+    } else {
+        printf("bringup: storage absent\n");
+    }
+
     printf("bringup: %dx%d grid ready, tap each numbered cell\n", width, height);
     was_pressed = false;
     active = true;
