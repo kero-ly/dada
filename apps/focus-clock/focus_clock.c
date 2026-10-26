@@ -8,7 +8,10 @@
 #include "clock.h"
 #include "render.h"
 
-#define SESSION_MS (25u * 60u * 1000u)
+#ifndef DADA_FOCUS_MINUTES
+#define DADA_FOCUS_MINUTES 25
+#endif
+#define SESSION_MS ((uint32_t)DADA_FOCUS_MINUTES * 60u * 1000u)
 
 static dada_app_services_t services;
 static focus_clock_t clock;
