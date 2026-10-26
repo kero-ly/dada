@@ -1,98 +1,70 @@
 # dada · 搭搭
 
-**连接应用与硬件的开源平台。一次开发，自由组合。**
+连接应用与硬件的平台，从一块 ESP32-C3 触摸屏开发板开始。
+应用依赖能力契约，板级绑定负责引脚、总线和驱动。
 
-应用只通过少量**能力契约**与板子打交道，因此同一份应用可以跑在不同屏幕、不同 MCU、
-不同外设组合上，而不需要改应用本身。
+English: [README.md](README.md).
 
-> English: [README.md](README.md)
+## 当前做到哪一步
 
----
+- 首板：金逸晨 ESP32-C3 + 2.4 寸 ST7789 屏 + CST836U 触摸，工具链 **ESP-IDF v5.4.2**。
+- 已有显示/输入契约、可复用驱动、板级清单及配置头文件生成。
+- 两个可选择的原生 C 应用：`touch-counter` 触摸计数器（默认）、`bringup` 色带与触摸诊断。
+- 已有实验性的单应用生命周期、服务注入、主机测试与本地交付 CLI。
+- 色带颜色和触摸事件已获实机确认；计数器交互与断电重启单独记录在
+  [硬件记录](tests/hardware/records/)中。
 
-## 现状（如实说明）
-
-仓库处于**初始化阶段**。目前**已有**：
-
-- ✅ ESP-IDF 工程骨架（`firmware/`），能启动并打印一行日志。
-- ✅ 目录结构、板级清单草案、CI 编译工作流、协作模板。
-- ✅ 架构决策已用 ADR 记录（[`docs/adr/`](docs/adr/README.md)）。
-- ✅ 契约层之下的显示（ST7789）与触摸（CST836U）驱动已进仓库，
-  板级绑定从构建期生成的清单头文件读取引脚。
-- ✅ 首板**在 ESP-IDF v5.4.2 下点亮通过**：真实硬件上画出色带、触摸有应答，
-  而应用代码里没有任何引脚号。记录见 [`tests/hardware/records/`](tests/hardware/records/)。
-
-目前**没有**：
-
-- ❌ 没有运行时（能力注册/生命周期）、没有应用 IR 编译器、没有番茄钟。
-- ❌ 还没有第二块板，抽象尚未被真正检验。
-- ❌ 还没有许可证文件（见 [ADR 0004](docs/adr/0004-license.md)）。
-
-首板是金逸晨 ESP32-C3 + 2.4 寸 240×320 触摸屏；首个目标应用是离线触摸番茄钟。
+尚无通用运行时、应用 IR 编译器、自动硬件发现、包市场、AI 连接器和第二块受支持的板子。
+先用原生 C 应用检验契约；[ADR 0005](docs/adr/0005-app-ir.md) 的声明式应用仍是提案。
 
 ## 快速开始
 
+先激活已安装的 ESP-IDF v5.4.2 环境，再在仓库根目录执行：
+
 ```sh
-# 需要 ESP-IDF v5.4.2（基线版本，firmware/CMakeLists.txt 会强校验）
-idf.py -C firmware set-target esp32c3
-idf.py -C firmware build
+python tools/dada.py check
+python tools/dada.py build
+python tools/dada.py ports
+python tools/dada.py flash --port YOUR_PORT
+python tools/dada.py monitor --port YOUR_PORT
+# 切换到硬件诊断应用，使用独立构建目录：
+python tools/dada.py build --app bringup
 ```
 
-编译不需要插板子；烧录需要，步骤见 [`tests/hardware/bringup.md`](tests/hardware/bringup.md)。
+烧录会替换原固件，需要恢复时请保留备份。
+环境安装见[开发指南](docs/development.md)，交互说明见[计数器说明](apps/touch-counter/README.zh-CN.md)。
 
-## 工程结构
+## 三层如何落地
 
 ```text
-apps/         应用（只有业务逻辑，不出现 GPIO 和板名）
-runtime/      平台服务与能力注册表                    （未实现）
-components/   实现契约的可复用驱动                    （未实现）
-contracts/    能力契约 + JSON Schema                  （草案）
-hardware/     每块板的清单：引脚、初始化数据、证据来源
-connectors/   AI / 外部服务适配                       （未实现）
-firmware/     ESP-IDF 集成工程
-tools/        主机工具（清单校验、代码生成、验证）
-tests/        实机验收步骤与验证记录
-docs/         ADR、术语表、开发说明
+开发者应用       apps/：业务逻辑、应用私有界面，不出现 GPIO 或 ESP-IDF API
+中间平台         contracts/：能力契约和实验性应用生命周期
+                 firmware/：选择板卡、注入服务、调度应用
+                 hardware/ + components/：板级适配与可复用驱动
+                 tools/：构建前检查、配置生成、调用 ESP-IDF 构建和烧录
+底层硬件         真实的 ESP32-C3、屏幕、触摸与连线
 ```
 
-依赖方向：**应用 → 契约 → 组件 / 板级绑定 → ESP-IDF → 硬件**。
+设备运行时，应用调用注入的能力实现；电脑端工具负责准备与交付固件。
+`runtime/` 等第二个应用出现实际共性后再提取公共服务；`connectors/` 预留可选的本地/云端服务适配。
 
-## 设计原则
+[分阶段架构路线](docs/architecture/incremental-roadmap.zh-CN.md)：
+**计数器 → 离线番茄钟 → 第二块板 → 外部硬件贡献 → 应用生态**。
+每一步均有验收门槛。主机测试中的两种分辨率不等于两块实物板已验证；
+第二块板验证前，不建设通用框架和包市场。
 
-1. **契约是 sink 级的。** 显示契约只负责“送像素 + 调背光”，**不提供绘图原语**；
-   UI 框架在契约之上，因此可替换。→ [ADR 0001](docs/adr/0001-layering.md)
-2. **板级清单是唯一真源。** CI 校验，构建期生成 C 头文件；未知值保持 `null`，禁止填猜测值。
-   → [ADR 0002](docs/adr/0002-board-manifest.md)
-3. **只有存在机器可读验证报告的板子才算“支持”。** → [ADR 0003](docs/adr/0003-verification.md)
-4. **应用是声明式的。** YAML 作为中间表示，将来拖拽编辑器可以生成同一份 IR。
-   → [ADR 0005](docs/adr/0005-app-ir.md)
+## 测试与协作
 
-## 路线
+```sh
+cmake -S tests/host -B /tmp/dada-host
+cmake --build /tmp/dada-host
+ctest --test-dir /tmp/dada-host --output-on-failure
+python3 -m unittest discover -s tests/host -p 'test_*.py'
+```
 
-| 阶段 | 目标 | 完成标准 |
-| --- | --- | --- |
-| P0 | 一块板 + 一个应用，端到端 | 陌生人照文档 10 分钟内看到能用的番茄钟 |
-| P1 | 第二块板（ESP32-S3 + 独立屏 + 独立触摸） | 同一份应用不改代码跑起来 |
-| P2 | 第三方板 | 外部贡献者提交一块板 + 验证报告并被合并 |
-| P3 | 应用生态 | 第一个非作者编写的声明式应用被合并 |
+见 [CONTRIBUTING.md](CONTRIBUTING.md)、[架构决策](docs/adr/README.md)与[主机工具](tools/README.md)。
+CI 编译两个应用并运行主机及清单检查，显示和触摸仍需实机验收记录。
+不上传或复制没有合适许可证的商家示例；`dada verify` 尚未实现。
 
-**硬规则：P1 完成之前，不做通用运行时、不做包市场、不承诺“支持 N 块板”。**
-只对着一个目标设计的抽象，通常是错的。
-
-## 语言约定
-
-代码、提交信息、Issue 模板用英文；文档双语：`X.md`（英文）+ `X.zh-CN.md`（中文）。
-ADR 顶部给英文摘要、正文中文。
-
-**不使用机器翻译生成发布文档**——三篇好文档胜过三十篇机翻。
-
-## 参与贡献
-
-见 [CONTRIBUTING.md](CONTRIBUTING.md)。有两条要重复强调：
-
-- **绝不复制板卡厂商源码包里的代码。** 卖家源码通常没有许可证，请对照数据手册重写。
-- **新板卡必须附 `dada verify` 生成的验证报告。**
-
-## 许可证
-
-尚未选定，建议见 [ADR 0004](docs/adr/0004-license.md)（建议 Apache-2.0）。
-在许可证文件落地之前，本仓库在法律上属于“保留所有权利”，不能被合法复用。
+代码、提交信息用英文，文档逐步提供中英版本。
+许可证尚待选定，见 [ADR 0004](docs/adr/0004-license.md)。

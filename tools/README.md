@@ -1,10 +1,30 @@
 # 主机工具
 
-目前只有两个脚本，都是纯 Python（仅依赖 `jsonschema`），在 CI 里跑，本地也能跑。
+本地交付入口是 `dada.py`，清单检查和配置生成由另外两个脚本完成。
+校验脚本依赖 `jsonschema`；交付 CLI 使用标准库，构建/烧录时需要激活 ESP-IDF v5.4.2，
+端口枚举使用该环境附带的 pyserial。
 
 ```sh
 pip install -r tools/requirements.txt
 ```
+
+## dada.py：最小本地交付闭环
+
+```sh
+python tools/dada.py check --app touch-counter
+python tools/dada.py build --app touch-counter
+python tools/dada.py ports
+python tools/dada.py flash --app touch-counter --port YOUR_PORT
+python tools/dada.py monitor --app touch-counter --port YOUR_PORT
+python tools/dada.py build --app bringup
+```
+
+默认板 `jinyichen-esp32-c3-lcd-2.4`，可用 `--board` 显式指定。
+构建前检查板级绑定、原生 C 应用格式、所需 display/input 与最小屏幕尺寸，
+然后调用 ESP-IDF；不自动下载 SDK 或选择串口。
+各选择的构建产物放在 `firmware/build/<board>--<app>/`。
+`sdkconfig` 仍由当前 C3 集成工程共享；完整资源匹配和跨芯片配置隔离尚未实现。
+`check` 检查声明兼容性，不等同于实机认证，也不替代下方完整板级 Schema 检查。
 
 ## validate_manifests.py
 
@@ -53,4 +73,4 @@ python tools/gen_board_config.py --all -o build/board-config
 ## 尚未实现
 
 - `dada verify`：实机自检并产出报告（见 ADR 0003），需要先有驱动与自检固件。
-- 交付 CLI / 跨板构建工具：等第二块板接入后再抽取。
+- 完整跨板匹配、版本兼容、资源估算与包分发：在第二块板及外部贡献验证后推进。

@@ -1,9 +1,24 @@
 # 固件集成入口
 
-从仓库根目录执行 `idf.py -C firmware build`。`main/main.c` 只验证启动与日志，不代表应用层或平台 API 的设计。
+`main/main.c` 是组合入口：初始化板卡 → 注入显示/输入服务 → 启动所选应用 →
+每 20ms 调用一次 step；应用返回错误后 stop 并释放板级资源。
+业务和界面放在 `apps/`，引脚和屏幕参数放在板级绑定与驱动。
 
-默认串口控制台沿用 ESP-IDF 的 UART 默认设置。若板卡使用原生 USB Serial/JTAG，先确认原理图，再通过 `idf.py -C firmware menuconfig` 设置 Console output channel；不要猜测 USB 与串口接线。
+推荐在仓库根目录使用 `python tools/dada.py build --app touch-counter`。
+需要直接调用 IDF 时：
 
-`sdkconfig` 是本机生成配置，不提交；共同配置应经过审查写回 `sdkconfig.defaults`。当前采用 2MB 单应用分区作为最小启动基线，不代表板载 Flash 已确认为 2MB。不启用 OTA、Wi-Fi、显示或触摸。
+```sh
+idf.py -C firmware -DDADA_APP=touch-counter build
+idf.py -C firmware -DDADA_APP=touch-counter -p YOUR_PORT flash
+```
 
-将来应用组件放在 `apps/`，平台组件放在 `runtime/`，板级组件放在 `hardware/`；在此处通过 `EXTRA_COMPONENT_DIRS` 显式接入。只添加已经实现的组件，避免扫描整个仓库。
+直接调用的默认构建目录为 `firmware/build/`；CLI 为每个板卡/应用使用独立子目录。
+可选应用为 `touch-counter`（默认）和 `bringup`，默认板为 `jinyichen-esp32-c3-lcd-2.4`。
+CMake 配置时检查应用需求，未知或不匹配的选择直接失败。
+
+工具链固定 ESP-IDF v5.4.2；当前 C3 配置为已测得的 4MB Flash，单应用分区。
+控制台使用原生 USB Serial/JTAG，显示与触摸已接入；Wi-Fi 和 OTA 尚未启用。
+`sdkconfig` 是本机生成配置，不提交；公共设置写在 `sdkconfig.defaults`。
+它目前仍由同一 C3 集成工程共享，不承诺跨芯片配置隔离。
+
+团队上手与串口选择见 [开发指南](../docs/development.md)。
