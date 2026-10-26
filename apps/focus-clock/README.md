@@ -1,5 +1,25 @@
-# 首个应用：离线触摸番茄钟
+# Focus clock
 
-状态：待实现。第一版只需要倒计时、开始/暂停/重置和结束提示；先不依赖网络、云服务或音频。
+Hardware-independent native C application using `contracts/app.h`.
+Chinese: [README.zh-CN.md](README.zh-CN.md).
 
-先拿到屏幕、触摸实测结果，再确定最小显示/输入/时间接口。业务状态机不引用板名、GPIO 或屏幕控制器；需要板级知识的代码归入 hardware/ 或 components/。
+- Starts at `25:00` in `TAP` state; tap anywhere above the bottom quarter to start,
+  pause or resume. A session that ran out shows `DONE`; tapping again starts a new one.
+- The bottom quarter is RESET: back to `25:00`, keeping the completed-session count.
+- Offline only. Timing comes from `dada_time_t.monotonic_ms`; there is no RTC and no
+  network, so the countdown survives nothing but its own process.
+- Requires RGB565 display ≥160×200, pointer input and the `time` capability. No ESP-IDF,
+  pins or board IDs appear in app code.
+- `clock.c` holds the timing rules with no UI or hardware: pause does not accumulate,
+  a session ends at exactly zero, overshoot does not double count, and a clock that
+  steps backwards never credits time.
+- Private renderer keeps a full-frame canvas and pushes only the changed blocks
+  (time block, progress bar, state word).
+
+```sh
+python tools/dada.py build --app focus-clock
+python tools/dada.py flash --app focus-clock --port YOUR_PORT
+```
+
+Host regression tests: `tests/host/test_clock.c`. Visual layout and long-session
+behaviour require physical acceptance, not just a successful build.

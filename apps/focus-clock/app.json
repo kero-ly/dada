@@ -1,0 +1,6 @@
+{
+  "id": "focus-clock",
+  "format": "native-c-v1",
+  "requires": ["display", "input", "time"],
+  "display": {"min_width": 160, "min_height": 200}
+}
