@@ -32,7 +32,30 @@ I (376) app_host: focus-clock started (240x320)
 
 用户确认状态词与数字按预期变化（`TAP → RUN → PAUSE → RUN → 25:00`）。
 
-## 结果三：计时规则 —— 由主机测试覆盖
+## 结果三：完整跑完一轮 —— 通过（2 分钟版）
+
+25 分钟太长，用编译期参数把一轮缩短到 2 分钟再验：
+
+```sh
+idf.py -DDADA_APP=focus-clock -DDADA_FOCUS_MINUTES=2 build flash
+```
+
+串口完整记录：
+
+```
+focus: toggle -> state 1, 120 s left      ← 点击开始，RUNNING，剩 120 s
+focus: session done, 1 completed          ← 2 分钟后进入 DONE，完成次数 +1
+```
+
+用户同时确认：
+
+- 走完时数字停在 `00:00`、状态词变 `DONE`；
+- 在 `DONE` 上再点中间，数字回到 `02:00` 并继续走（新一轮）；
+- 日志对应 `toggle -> state 1, 120 s left`。
+
+验证完已重新烧回默认的 25 分钟版本（`focus: ready 25:00`）。
+
+## 结果四：计时规则 —— 由主机测试覆盖
 
 实机只验证了"能走、能停、能重置"；边界规则在 `tests/host/test_clock.c`：
 
@@ -55,7 +78,7 @@ I (376) app_host: focus-clock started (240x320)
 
 ## 未覆盖
 
-- 完整走完一轮 25 分钟（只验证了短时间倒计时与状态切换）
+- 25 分钟的真实时长（用 2 分钟版验证了同一套逻辑，但没等过完整的 25 分钟）
 - 长时间运行（>30 分钟）的稳定性与内存
 - 断电后行为：预期从 `25:00` 冷启动，未实测
 - 结束提示：目前只有状态词 `DONE` 变色，没有声音或闪烁
@@ -65,6 +88,9 @@ I (376) app_host: focus-clock started (240x320)
 ```sh
 python tools/dada.py build --app focus-clock
 python tools/dada.py flash --app focus-clock --port YOUR_PORT
+
+# 快速跑完一轮：把时长缩到 2 分钟（默认 25）
+idf.py -C firmware -DDADA_APP=focus-clock -DDADA_FOCUS_MINUTES=2 build flash
 ```
 
 主机测试：

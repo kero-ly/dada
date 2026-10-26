@@ -65,7 +65,15 @@ python tools/dada.py monitor --app bringup --port YOUR_PORT
 串口打印 `bringup: tap (x, y) -> cell N (row r col c)`。
 这样可以逐条核对触摸坐标与屏幕位置是否对应，而不是只看"有没有坐标"。
 
-验收后用 `--app touch-counter` 切回。板级参数与历史证据见 `tests/hardware/records/`。
+验收后用 `--app touch-counter` 切回。
+
+想把番茄钟一轮缩短到 2 分钟做端到端验证，直接传 CMake 变量
+（默认 25 分钟，不影响应用代码）：
+
+```sh
+idf.py -C firmware -DDADA_APP=focus-clock -DDADA_FOCUS_MINUTES=2 build flash
+```
+板级参数与历史证据见 `tests/hardware/records/`。
 
 > `DADA_APP` 是 CMake cache 变量。直接用 `idf.py` 构建时它会记住上一次的选择，
 > 需要显式传 `-DDADA_APP=...`；用 `tools/dada.py --app ...` 则每次都会覆盖。
