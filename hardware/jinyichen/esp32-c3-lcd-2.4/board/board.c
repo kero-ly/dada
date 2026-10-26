@@ -36,8 +36,9 @@ dada_err_t board_init(dada_display_t **display, dada_input_t **input)
             .width = DADA_BOARD_WIDTH,
             .height = DADA_BOARD_HEIGHT,
             .pclk_hz = 40 * 1000 * 1000,
-            .spi_mode = 0,
-            .invert_color = false,
+            /* This CS-tied-low panel needs mode 3 (vendor default); mode 0 stays black. */
+            .spi_mode = 3,
+            .invert_color = true,
             .bgr_order = false,
         };
         dada_err_t err = display_st7789_init(&cfg, display);

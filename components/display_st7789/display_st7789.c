@@ -164,6 +164,8 @@ dada_err_t display_st7789_init(const display_st7789_config_t *cfg, dada_display_
     esp_lcd_panel_dev_config_t panel_cfg = {
         .reset_gpio_num = cfg->rst_gpio,
         .bits_per_pixel = 16,
+        /* The display contract supplies little-endian RGB565 pixels. */
+        .data_endian = LCD_RGB_DATA_ENDIAN_LITTLE,
     };
     panel_cfg.rgb_ele_order = cfg->bgr_order ? LCD_RGB_ELEMENT_ORDER_BGR : LCD_RGB_ELEMENT_ORDER_RGB;
     if (esp_lcd_new_panel_st7789(ctx->io, &panel_cfg, &ctx->panel) != ESP_OK) {
