@@ -82,6 +82,9 @@ python tools/validate_manifests.py
 python tools/gen_board_config.py --all -o /tmp/dada-board-config
 ```
 
+主机测试不需要 ESP-IDF，但需要一个本机 C 编译器（Windows 上装 MinGW-w64 或 LLVM，
+macOS 用 Xcode 命令行工具，Linux 用 gcc）；构建目录随意，`/tmp` 只是示例。
+
 主机测试不需要 ESP-IDF。清单校验需要 `jsonschema`；构建、烧录、端口枚举使用激活后的 IDF 环境。
 CI 分别编译两个应用，运行主机和板级清单检查；实机显示/触摸/冷启动另附验证记录。
 不要提交 `sdkconfig`、构建产物、密钥或无合适许可证的商家源码。

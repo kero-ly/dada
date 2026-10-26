@@ -8,3 +8,8 @@ add_executable(test_counter test_counter.c
 target_include_directories(test_counter PRIVATE ../../contracts ../../apps/touch-counter)
 target_compile_options(test_counter PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 add_test(NAME counter COMMAND test_counter)
+
+add_executable(test_clock test_clock.c ../../apps/focus-clock/clock.c)
+target_include_directories(test_clock PRIVATE ../../contracts ../../apps/focus-clock)
+target_compile_options(test_clock PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+add_test(NAME clock COMMAND test_clock)
