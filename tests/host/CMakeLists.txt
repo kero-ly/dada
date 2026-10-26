@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.16)
+project(dada_host_tests C)
+enable_testing()
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+add_executable(test_counter test_counter.c
+    ../../apps/touch-counter/counter.c ../../apps/touch-counter/render.c)
+target_include_directories(test_counter PRIVATE ../../contracts ../../apps/touch-counter)
+target_compile_options(test_counter PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+add_test(NAME counter COMMAND test_counter)

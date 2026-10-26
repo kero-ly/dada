@@ -10,21 +10,23 @@ permissions:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        app: [touch-counter, bringup]
     runs-on: ubuntu-24.04
     container: espressif/idf:v5.4.2
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Build C3 bootstrap
+      - name: Build selected C3 application
         shell: bash
         run: |
           . "$IDF_PATH/export.sh"
-          idf.py -C firmware set-target esp32c3
-          idf.py -C firmware build
+          idf.py -C firmware -DDADA_APP=${{ matrix.app }} build
       - name: Save smoke firmware and build configuration
         uses: actions/upload-artifact@v4
         with:
-          name: c3-bootstrap-${{ github.sha }}
+          name: c3-${{ matrix.app }}-${{ github.sha }}
           if-no-files-found: error
           path: |
             firmware/build/*.bin

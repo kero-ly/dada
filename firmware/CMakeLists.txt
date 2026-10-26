@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.16)
 # Override with: idf.py -DDADA_BOARD=<manifest id> build
 # ---------------------------------------------------------------------------
 set(DADA_BOARD "jinyichen-esp32-c3-lcd-2.4" CACHE STRING "Board manifest id")
+set(DADA_APP "touch-counter" CACHE STRING "Native app id")
+set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup)
 
 string(FIND "${DADA_BOARD}" "-" sep)
 if(sep LESS 0)
@@ -28,6 +30,20 @@ find_program(DADA_PYTHON NAMES python3 python)
 if(NOT DADA_PYTHON)
     message(FATAL_ERROR "python not found; required to generate the board header")
 endif()
+
+# Fail capability mismatch before compiling or touching a device.
+execute_process(
+    COMMAND "${DADA_PYTHON}" "${CMAKE_CURRENT_LIST_DIR}/../tools/dada.py"
+            check --board "${DADA_BOARD}" --app "${DADA_APP}"
+    RESULT_VARIABLE DADA_APP_RC
+    ERROR_VARIABLE DADA_APP_ERR
+)
+if(NOT DADA_APP_RC EQUAL 0)
+    message(FATAL_ERROR "app/board selection failed:\n${DADA_APP_ERR}")
+endif()
+set(DADA_APP_DIR "${CMAKE_CURRENT_LIST_DIR}/../apps/${DADA_APP}")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${DADA_HW_DIR}/board.json" "${DADA_APP_DIR}/app.json")
 
 set(DADA_BOARD_CONFIG_DIR "${CMAKE_BINARY_DIR}/board-config")
 file(MAKE_DIRECTORY "${DADA_BOARD_CONFIG_DIR}")
@@ -56,6 +72,7 @@ set(IDF_TARGET "esp32c3")
 set(EXTRA_COMPONENT_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/../components"
     "${DADA_HW_DIR}/board"
+    "${DADA_APP_DIR}"
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

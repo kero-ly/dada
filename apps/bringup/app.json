@@ -1,0 +1,6 @@
+{
+  "id": "bringup",
+  "format": "native-c-v1",
+  "requires": ["display", "input"],
+  "display": {"min_width": 5, "min_height": 5}
+}
