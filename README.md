@@ -1,11 +1,43 @@
 # dada · 搭搭
 
-An open hardware application platform, starting with one ESP32-C3 touch board.
-Apps consume capability contracts; board bindings own pins, buses and drivers.
+**Connect applications and hardware. Focus on your product.**
 
-中文：[README.zh-CN.md](README.zh-CN.md).
+dada aims to connect application developers with the hardware ecosystem.
+Vendors contribute hardware descriptions and drivers; developers build hardware-independent
+applications; dada handles matching, building, validation and delivery.
 
-## Current implementation
+**English** · [简体中文](README.zh-CN.md)
+
+[Development guide](docs/development.md) · [Architecture roadmap](docs/architecture/incremental-roadmap.md) · [Contributing](CONTRIBUTING.md)
+
+> Stage: first-board validation on ESP32-C3. The diagrams below describe the platform vision; see Current progress for implemented capabilities.
+
+## Platform vision: reusable apps, composable hardware
+
+![dada ecosystem vision: application developers and hardware vendors contribute packages; the platform matches, builds, validates and delivers compatible products, with optional AI and local services.](docs/assets/architecture/platform-ecosystem-vision.png)
+
+Application developers describe behaviour and required capabilities. Hardware vendors provide
+chip, board and peripheral descriptions, drivers and verification evidence. Product builders
+and users select applications and compatible hardware combinations through the platform.
+Apps may connect to different AI providers, use local services or run entirely offline.
+Local model inference depends on device resources.
+
+## Global architecture: device platform and delivery platform
+
+![dada target architecture: applications, capability contracts, shared runtime services, hardware adaptation and composable devices, alongside package matching, build, validation and delivery tools.](docs/assets/architecture/platform-target-architecture.png)
+
+- **Applications:** business logic, interaction and capability requirements, with reusable sources.
+- **Device platform:** unified contracts, shared runtime services, chip/board adaptation and drivers.
+- **Physical hardware:** supported and verified combinations of chips, boards and peripherals.
+- **Host and delivery platform:** app/hardware packages, capability and resource matching,
+  build orchestration, verification records, release and updates.
+
+Application reuse depends on compatible capabilities, sufficient resources and physical
+verification; firmware is built for its target hardware. Runtime services are selected as needed,
+and host tools can run locally. ESP32 is the starting point; other MCUs and Linux boards
+will be evaluated incrementally. Apps may use cloud AI, local services or run entirely offline.
+
+## Current progress
 
 - Jinyichen ESP32-C3 + 2.4-inch ST7789 display + CST836U touch; ESP-IDF **v5.4.2**.
 - Display/input contracts, reusable drivers and manifest-generated board configuration.
@@ -36,26 +68,21 @@ Flashing replaces the existing firmware. Keep its backup if you need to restore 
 Detailed setup: [development guide](docs/development.md).
 Counter behaviour: [app guide](apps/touch-counter/README.md).
 
-## Architecture and next steps
+## From one board to a platform
 
-```text
-apps/             hardware-independent application behaviour and private UI
-contracts/        display/input capabilities and experimental app lifecycle
-firmware/         board selection, dependency injection and scheduling
-hardware/         board manifests and bindings (pins, peripherals, init settings)
-components/       reusable display and touch drivers
-runtime/          reserved for shared services proven necessary by multiple apps
-connectors/       reserved for optional local/cloud service adapters
-tools/            local selection checks, manifest validation, generation and IDF delivery
-```
+**Counter loop → offline pomodoro → second board → external hardware contribution → app ecosystem**
 
-The application calls injected contracts; board bindings supply driver implementations.
-Host tools prepare and deliver firmware; they are not device runtime services.
+Use real applications to identify shared services, a second board to validate source reuse,
+and reproducible workflows to enable third-party contributions.
+See the [acceptance gates](docs/architecture/incremental-roadmap.md) for each stage.
 
-[Incremental roadmap](docs/architecture/incremental-roadmap.md):
-**counter → offline pomodoro → second board → external hardware contribution → app ecosystem**.
-Each stage has an acceptance gate. Two resolutions in host tests do not establish portability
-across physical boards. No general framework or registry before the second-board gate.
+| Explore | Documentation |
+| --- | --- |
+| Current C3 architecture and delivery workflow | [Implementation diagrams](docs/architecture/current-implementation.md) |
+| Setup, build, flash and team workflow | [Development guide](docs/development.md) |
+| Capability contracts, board manifests and app formats | [Architecture decisions](docs/adr/README.md) |
+| CLI and manifest validation | [Host tools](tools/README.md) |
+| Physical evidence and pending acceptance | [Hardware records](tests/hardware/records/) |
 
 ## Tests and collaboration
 
@@ -73,4 +100,7 @@ Vendor sample packages without a suitable license must not be uploaded or copied
 `dada verify` is planned, not implemented.
 
 Code and commits use English; documentation uses paired English/Chinese pages where available.
-License selection remains open: [ADR 0004](docs/adr/0004-license.md).
+
+## License
+
+The project intends to be open source; license selection remains open: [ADR 0004](docs/adr/0004-license.md).
