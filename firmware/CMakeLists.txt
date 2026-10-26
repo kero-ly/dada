@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 # ---------------------------------------------------------------------------
 set(DADA_BOARD "jinyichen-esp32-c3-lcd-2.4" CACHE STRING "Board manifest id")
 set(DADA_APP "touch-counter" CACHE STRING "Native app id")
-set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup focus-clock)
+set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup focus-clock snake)
 # Pomodoro length, in minutes. Defaults to the real 25; override for a quick
 # end-to-end run: idf.py -DDADA_FOCUS_MINUTES=2 build
 set(DADA_FOCUS_MINUTES 25 CACHE STRING "focus-clock session length in minutes")
@@ -74,6 +74,7 @@ set(IDF_TARGET "esp32c3")
 # in components/dada_contracts (component names follow directory names).
 set(EXTRA_COMPONENT_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/../components"
+    "${CMAKE_CURRENT_LIST_DIR}/../apps/app_support"
     "${DADA_HW_DIR}/board"
     "${DADA_APP_DIR}"
 )
