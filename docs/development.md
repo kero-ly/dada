@@ -61,8 +61,14 @@ python tools/dada.py flash --app bringup --port YOUR_PORT
 python tools/dada.py monitor --app bringup --port YOUR_PORT
 ```
 
-预期五条色带红、绿、蓝、白、黑（按显示坐标方向），触摸按下/松开打印日志。
+预期屏幕出现 **3×3 网格**，每格中央有编号 1~9；触摸时在触点画出红色方块，
+串口打印 `bringup: tap (x, y) -> cell N (row r col c)`。
+这样可以逐条核对触摸坐标与屏幕位置是否对应，而不是只看"有没有坐标"。
+
 验收后用 `--app touch-counter` 切回。板级参数与历史证据见 `tests/hardware/records/`。
+
+> `DADA_APP` 是 CMake cache 变量。直接用 `idf.py` 构建时它会记住上一次的选择，
+> 需要显式传 `-DDADA_APP=...`；用 `tools/dada.py --app ...` 则每次都会覆盖。
 
 ## 本地检查
 
