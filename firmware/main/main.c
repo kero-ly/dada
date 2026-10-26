@@ -12,13 +12,15 @@ void app_main(void)
     dada_display_t *display = NULL;
     dada_input_t *input = NULL;
     dada_time_t *time = NULL;
-    dada_err_t err = board_init(&display, &input, &time);
+    dada_storage_t *storage = NULL;
+    dada_err_t err = board_init(&display, &input, &time, &storage);
     if (err != DADA_OK) {
         ESP_LOGE(TAG, "board_init failed: %d", err);
-        board_deinit(display, input);
+        board_deinit(display, input, storage);
         return;
     }
-    dada_app_services_t services = {.display = display, .input = input, .time = time};
+    dada_app_services_t services = {
+        .display = display, .input = input, .time = time, .storage = storage};
     err = dada_app_start(&services);
     if (err == DADA_OK) {
         ESP_LOGI(TAG, "%s started (%ux%u)", DADA_APP_ID, display->width, display->height);
@@ -28,5 +30,5 @@ void app_main(void)
     }
     ESP_LOGE(TAG, "%s stopped: %d", DADA_APP_ID, err);
     dada_app_stop();
-    board_deinit(display, input);
+    board_deinit(display, input, storage);
 }

@@ -6,6 +6,7 @@
 #include "display_st7789.h"
 #include "esp_log.h"
 #include "esp_timer.h"
+#include "storage_nvs.h"
 #include "touch_cst836u.h"
 
 static const char *TAG = "board";
@@ -44,12 +45,20 @@ static dada_time_t board_time = {
 };
 
 dada_err_t board_init(dada_display_t **display, dada_input_t **input,
-                      dada_time_t **time)
+                      dada_time_t **time, dada_storage_t **storage)
 {
     ESP_LOGI(TAG, "board %s (flash %d MB)", DADA_BOARD_ID, DADA_BOARD_FLASH_MB);
 
     if (time) {
         *time = &board_time;
+    }
+
+    if (storage) {
+        dada_err_t err = storage_nvs_init(storage);
+        if (err != DADA_OK) {
+            ESP_LOGE(TAG, "storage init failed (%d)", err);
+            return err;
+        }
     }
 
     if (display) {
@@ -106,8 +115,12 @@ dada_err_t board_init(dada_display_t **display, dada_input_t **input,
     return DADA_OK;
 }
 
-void board_deinit(dada_display_t *display, dada_input_t *input)
+void board_deinit(dada_display_t *display, dada_input_t *input,
+                  dada_storage_t *storage)
 {
+    if (storage) {
+        storage_nvs_deinit(storage);
+    }
     if (display) {
         display_st7789_deinit(display);
     }

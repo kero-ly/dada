@@ -43,12 +43,14 @@ def resolve_selection(board_id, app_id, root=ROOT):
             "display": "display" in verified,
             "input": "input" in verified or "touch" in verified,
             "time": "time" in verified,
+            "storage": "storage" in verified,
         }
     else:
         capabilities = {
             "display": bool(board.get("display")),
             "input": bool(board.get("touch")),
             "time": False,
+            "storage": False,
         }
     for required in app["requires"]:
         if not capabilities.get(required, False):

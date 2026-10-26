@@ -10,6 +10,7 @@
 
 #include "display.h"
 #include "input.h"
+#include "storage.h"
 #include "time.h"
 
 #ifdef __cplusplus
@@ -23,9 +24,10 @@ extern "C" {
  * the function then returns DADA_OK without initialising it.
  */
 dada_err_t board_init(dada_display_t **display, dada_input_t **input,
-                      dada_time_t **time);
+                      dada_time_t **time, dada_storage_t **storage);
 
-void board_deinit(dada_display_t *display, dada_input_t *input);
+void board_deinit(dada_display_t *display, dada_input_t *input,
+                  dada_storage_t *storage);
 
 #ifdef __cplusplus
 }

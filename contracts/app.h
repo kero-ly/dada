@@ -3,6 +3,7 @@
 
 #include "display.h"
 #include "input.h"
+#include "storage.h"
 #include "time.h"
 
 #ifdef __cplusplus
@@ -14,6 +15,7 @@ typedef struct {
     dada_display_t *display;
     dada_input_t *input;
     dada_time_t *time;
+    dada_storage_t *storage;
 } dada_app_services_t;
 
 /** Start/render the app. A failed start must leave it safe to stop or retry. */
