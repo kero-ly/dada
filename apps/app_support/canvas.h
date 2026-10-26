@@ -9,6 +9,9 @@
 
 #include "display.h"
 
+/* Rows packed per transfer; keeps the temporary buffer small. */
+#define CANVAS_STRIPE_ROWS 16
+
 typedef struct {
     dada_display_t *display;
     uint16_t *pixels;

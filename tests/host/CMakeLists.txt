@@ -18,3 +18,8 @@ add_executable(test_snake test_snake.c ../../apps/snake/snake.c)
 target_include_directories(test_snake PRIVATE ../../contracts ../../apps/snake)
 target_compile_options(test_snake PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 add_test(NAME snake COMMAND test_snake)
+
+add_executable(test_canvas test_canvas.c ../../apps/app_support/canvas.c)
+target_include_directories(test_canvas PRIVATE ../../contracts ../../apps/app_support)
+target_compile_options(test_canvas PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+add_test(NAME canvas COMMAND test_canvas)

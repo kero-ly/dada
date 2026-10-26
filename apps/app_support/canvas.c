@@ -84,19 +84,30 @@ dada_err_t canvas_flush(canvas_t *c, int x, int y, int w, int h)
     if (x < 0 || y < 0 || x + w > c->width || y + h > c->height) {
         return DADA_ERR_INVALID_ARG;
     }
-    uint16_t *packed = malloc((size_t)w * h * sizeof(uint16_t));
+    /* Pack and push in stripes. Allocating a buffer the size of the region
+     * doubles peak heap use and fails once a full-frame canvas is in play. */
+    int rows = h < CANVAS_STRIPE_ROWS ? h : CANVAS_STRIPE_ROWS;
+    uint16_t *packed = malloc((size_t)w * rows * sizeof(uint16_t));
     if (!packed) {
         return DADA_ERR_FAIL;
     }
-    for (int row = 0; row < h; row++) {
-        for (int col = 0; col < w; col++) {
-            packed[row * w + col] = c->pixels[(y + row) * c->width + (x + col)];
+    dada_err_t result = DADA_OK;
+    for (int done = 0; done < h; done += rows) {
+        int count = (h - done) < rows ? (h - done) : rows;
+        for (int row = 0; row < count; row++) {
+            for (int col = 0; col < w; col++) {
+                packed[row * w + col] = c->pixels[(y + done + row) * c->width + (x + col)];
+            }
+        }
+        dada_area_t area = {(int16_t)x, (int16_t)(y + done), (int16_t)(x + w - 1),
+                            (int16_t)(y + done + count - 1)};
+        result = c->display->flush(c->display->ctx, &area, packed);
+        if (result != DADA_OK) {
+            break;
         }
     }
-    dada_area_t area = {(int16_t)x, (int16_t)y, (int16_t)(x + w - 1), (int16_t)(y + h - 1)};
-    dada_err_t err = c->display->flush(c->display->ctx, &area, packed);
     free(packed);
-    return err;
+    return result;
 }
 
 dada_err_t canvas_flush_all(canvas_t *c)
