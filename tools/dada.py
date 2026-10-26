@@ -20,7 +20,7 @@ def resolve_selection(board_id, app_id, root=ROOT):
             raise ValueError("invalid board/app id: " + name)
     manifest = None
     for path in (root / "hardware").glob("*/*/board.json"):
-        board = json.loads(path.read_text())
+        board = json.loads(path.read_text(encoding="utf-8-sig"))
         if board.get("id") == board_id:
             manifest = path
             break
@@ -31,7 +31,7 @@ def resolve_selection(board_id, app_id, root=ROOT):
     app_dir = root / "apps" / app_id
     if not (app_dir / "app.json").is_file():
         raise ValueError("unknown app: " + app_id)
-    app = json.loads((app_dir / "app.json").read_text())
+    app = json.loads((app_dir / "app.json").read_text(encoding="utf-8-sig"))
     if app.get("id") != app_id or app.get("format") != "native-c-v1":
         raise ValueError("unsupported app manifest: " + app_id)
     capabilities = {"display": bool(board.get("display")), "input": bool(board.get("touch"))}
