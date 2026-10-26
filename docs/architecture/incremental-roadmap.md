@@ -25,7 +25,7 @@ A hardware description alone cannot support an unknown chip without drivers and 
 | --- | --- | --- |
 | 1 Hardware baseline | done | colour bands, orientation and touch coordinates accepted on device; see `tests/hardware/records/` |
 | 2 Counter loop | done | count/reset accepted on device; clean-clone build reproduced by CI across three apps |
-| 3 Offline pomodoro | first version accepted | `apps/focus-clock` runs with an injected `time` contract; timing rules covered by host tests; a full 25-minute session has not been run |
+| 3 Offline pomodoro | first version accepted | `apps/focus-clock` runs with an injected `time` contract; one full session accepted end-to-end with a 2-minute build; the real 25-minute length has not been waited out |
 | 4 Second physical board | not started | needs a board decision, not a roadmap label |
 | 5 External hardware contribution | not started | templates and compatibility rules still missing |
 | 6 Application ecosystem | not started | SDK and compatibility matrix come first |
