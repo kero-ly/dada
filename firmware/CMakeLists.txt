@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 # ---------------------------------------------------------------------------
 set(DADA_BOARD "jinyichen-esp32-c3-lcd-2.4" CACHE STRING "Board manifest id")
 set(DADA_APP "touch-counter" CACHE STRING "Native app id")
-set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup)
+set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup focus-clock)
 
 string(FIND "${DADA_BOARD}" "-" sep)
 if(sep LESS 0)

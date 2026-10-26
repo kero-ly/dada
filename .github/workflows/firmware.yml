@@ -12,7 +12,8 @@ jobs:
   build:
     strategy:
       matrix:
-        app: [touch-counter, bringup]
+        # Keep in sync with apps/*/app.json; every native app must build here.
+        app: [touch-counter, bringup, focus-clock]
     runs-on: ubuntu-24.04
     container: espressif/idf:v5.4.2
     timeout-minutes: 20
