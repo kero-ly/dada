@@ -13,3 +13,8 @@ add_executable(test_clock test_clock.c ../../apps/focus-clock/clock.c)
 target_include_directories(test_clock PRIVATE ../../contracts ../../apps/focus-clock)
 target_compile_options(test_clock PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 add_test(NAME clock COMMAND test_clock)
+
+add_executable(test_snake test_snake.c ../../apps/snake/snake.c)
+target_include_directories(test_snake PRIVATE ../../contracts ../../apps/snake)
+target_compile_options(test_snake PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+add_test(NAME snake COMMAND test_snake)
