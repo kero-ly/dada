@@ -54,7 +54,8 @@ dada 致力于连接应用开发者与硬件生态。
 
 - 首板：金逸晨 ESP32-C3 + 2.4 寸 ST7789 屏 + CST836U 触摸，工具链 **ESP-IDF v5.4.2**。
 - 已有显示、输入、单调时间、存储契约；提供 NVS 存储及板级清单配置生成。
-- 四个可选择的原生 C 应用：`touch-counter`（默认）、`bringup`、`focus-clock`、`snake`。
+- 七个可选择的原生 C 应用，全部只依赖能力契约：`touch-counter`（默认）、`bringup`、
+  `focus-clock`、`snake`、`paint`、`whale`、`flappy`。各自的依赖与行为见 `apps/`。
 - 已有实验性单应用生命周期、服务注入、应用侧共享画布、主机测试与本地交付 CLI。
 - 显示、触摸、计数器、番茄钟和贪吃蛇均有对应实机记录，见[硬件记录](tests/hardware/records/)。
 
