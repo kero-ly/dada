@@ -1,4 +1,4 @@
-/* A blinking pixel portrait: display + time + storage.
+/* A pixel portrait: display + storage.
  *
  * Reads two pre-rendered frames (open / closed) from storage, draws the open
  * one, and swaps to the closed one for a fraction of a second every few
@@ -8,13 +8,12 @@
 
 #include <stdio.h>
 
-#include "canvas.h"
 
 /* The artwork is landscape: 64x48 cells of 5 px fills a 320x240 area, which
  * is then rotated onto the 240x320 panel. */
-#define GRID_W 80
-#define GRID_H 60
-#define CELL_PX 4
+#define GRID_W 160
+#define GRID_H 120
+#define CELL_PX 2
 #define FRAME_CELLS (GRID_W * GRID_H)
 #define FRAME_BYTES ((FRAME_CELLS + 1) / 2)
 #define FRAMES 1
@@ -25,9 +24,11 @@ static const uint16_t PALETTE[15] = {
     0x4B12, 0x42B1, 0x3A70, 0x424E, 0x29CC, 0x10C6, 0xF5D9,
 };
 
+#define STRIPE_ROWS 8
+
 static dada_app_services_t services;
-static canvas_t canvas;
 static uint8_t frames[FRAMES][FRAME_CELLS];
+static uint16_t stripe[240 * STRIPE_ROWS];
 static bool have_frames;
 static bool load_frame(int slot, const char *key)
 {
@@ -54,34 +55,62 @@ static bool load_frame(int slot, const char *key)
     return true;
 }
 
-/* Paint the landscape frame rotated onto the panel, so the picture is upright
- * when the board is held sideways. The inverse map avoids a second 150 KB
- * buffer: logical (x, y) = (py, width-1-px). */
+/* Paint the frame rotated onto the panel in horizontal stripes.
+ *
+ * A full 240x320 framebuffer needs 150 KB of *contiguous* heap, which the
+ * allocator cannot supply once the frame array is resident (the total is fine,
+ * the largest block is not). Eight rows need 3.8 KB and are flushed as we go.
+ *
+ * Mapping: physical (px, py) shows logical (lx = py, ly = width-1-px). */
 static dada_err_t draw_frame(int slot)
 {
     const int lw = GRID_W * CELL_PX;
     const int lh = GRID_H * CELL_PX;
-    for (int py = 0; py < canvas.height; py++) {
-        for (int px = 0; px < canvas.width; px++) {
-            int lx = py;
-            int ly = canvas.width - 1 - px;
-            if (lx >= lw || ly >= lh) {
-                canvas.pixels[py * canvas.width + px] = 0x0000;
-                continue;
+    const int phys_w = services.display->width;
+    const int phys_h = services.display->height;
+
+    for (int py0 = 0; py0 < phys_h; py0 += STRIPE_ROWS) {
+        int rows = phys_h - py0 < STRIPE_ROWS ? phys_h - py0 : STRIPE_ROWS;
+        for (int r = 0; r < rows; r++) {
+            int py = py0 + r;
+            for (int px = 0; px < phys_w; px++) {
+                int lx = py;
+                int ly = phys_w - 1 - px;
+                uint16_t color = 0x0000;
+                if (lx < lw && ly < lh && lx >= 0 && ly >= 0) {
+                    color = PALETTE[frames[slot][(ly / CELL_PX) * GRID_W + (lx / CELL_PX)]];
+                }
+                stripe[r * phys_w + px] = color;
             }
-            int gx = lx / CELL_PX;
-            int gy = ly / CELL_PX;
-            canvas.pixels[py * canvas.width + px] = PALETTE[frames[slot][gy * GRID_W + gx]];
+        }
+        dada_area_t area = {0, (int16_t)py0, (int16_t)(phys_w - 1),
+                            (int16_t)(py0 + rows - 1)};
+        dada_err_t err = services.display->flush(services.display->ctx, &area, stripe);
+        if (err != DADA_OK) {
+            return err;
         }
     }
-    return canvas_flush_all(&canvas);
+    return DADA_OK;
 }
 
 static dada_err_t draw_placeholder(void)
 {
-    canvas_clear(&canvas, 0x0000);
-    canvas_frame(&canvas, 8, 8, canvas.width - 16, canvas.height - 16, 2, 0x7C54);
-    return canvas_flush_all(&canvas);
+    /* Flat dark screen: frame data is stored separately from the firmware. */
+    const int phys_w = services.display->width;
+    for (int i = 0; i < phys_w * STRIPE_ROWS; i++) {
+        stripe[i] = 0x0000;
+    }
+    for (int py0 = 0; py0 < services.display->height; py0 += STRIPE_ROWS) {
+        int rows = services.display->height - py0 < STRIPE_ROWS
+                       ? services.display->height - py0 : STRIPE_ROWS;
+        dada_area_t area = {0, (int16_t)py0, (int16_t)(phys_w - 1),
+                            (int16_t)(py0 + rows - 1)};
+        dada_err_t err = services.display->flush(services.display->ctx, &area, stripe);
+        if (err != DADA_OK) {
+            return err;
+        }
+    }
+    return DADA_OK;
 }
 
 dada_err_t dada_app_start(const dada_app_services_t *provided)
@@ -95,19 +124,13 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
     }
     services = *provided;
 
-    dada_err_t err = canvas_init(&canvas, services.display);
-    if (err != DADA_OK) {
-        dada_app_stop();
-        return err;
-    }
-    canvas_clear(&canvas, 0x0000);
 
     have_frames = load_frame(0, KEY_FRAME0);
     if (!have_frames) {
         printf("whale: no stored frames; draw one in paint and re-seed\n");
         draw_placeholder();
     } else {
-        err = draw_frame(0);
+        dada_err_t err = draw_frame(0);
         if (err != DADA_OK) {
             dada_app_stop();
             return err;
@@ -125,6 +148,5 @@ dada_err_t dada_app_step(void)
 
 void dada_app_stop(void)
 {
-    canvas_free(&canvas);
     services = (dada_app_services_t){0};
 }

@@ -19,7 +19,7 @@
 #include "dada_types.h"
 
 /** Smallest blob size every implementation must accept. */
-#define DADA_STORAGE_BLOB_MAX 4096
+#define DADA_STORAGE_BLOB_MAX 12288
 
 #ifdef __cplusplus
 extern "C" {
