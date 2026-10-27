@@ -3,7 +3,7 @@
 使用 `contracts/app.h` 的、与硬件无关的原生 C 应用。
 English: [README.md](README.md)。
 
-![原图与面板实际显示](../../apps/whale/frames/preview.png)
+![原图与面板实际显示](frames/preview.png)
 
 显示一帧 160×120、15 色的画面，旋转后铺满竖屏面板——把板子横过来看就是正的。
 
