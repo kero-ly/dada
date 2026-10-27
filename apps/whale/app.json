@@ -1,0 +1,6 @@
+{
+  "id": "whale",
+  "format": "native-c-v1",
+  "requires": ["display", "time", "storage"],
+  "display": {"min_width": 200, "min_height": 200}
+}
