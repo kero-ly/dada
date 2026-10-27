@@ -7,8 +7,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define PAINT_MAX_COLS 40
-#define PAINT_MAX_ROWS 48
+#define PAINT_MAX_COLS 48
+#define PAINT_MAX_ROWS 56
+#define PAINT_PALETTE_SIZE 16
 
 typedef struct {
     int cols;
@@ -39,5 +40,14 @@ bool paint_stroke(paint_t *p, int x0, int y0, int x1, int y1, uint8_t color);
 
 void paint_clear(paint_t *p);
 
-/** Bytes needed to persist the bitmap. */
-uint32_t paint_size(const paint_t *p);
+/** Number of cells in the bitmap. */
+uint32_t paint_cell_count(const paint_t *p);
+
+/** Bytes needed to persist the bitmap: two 4-bit cells per byte. */
+uint32_t paint_packed_size(const paint_t *p);
+
+/** Pack into @p out; returns bytes written, or 0 when the buffer is too small. */
+uint32_t paint_pack(const paint_t *p, uint8_t *out, uint32_t capacity);
+
+/** Restore from packed bytes; returns false on a size mismatch. */
+bool paint_unpack(paint_t *p, const uint8_t *in, uint32_t length);

@@ -23,6 +23,32 @@ static void test_init_and_bounds(void)
 
     assert(!paint_init(&p, 0, 10));
     assert(!paint_init(&p, PAINT_MAX_COLS + 1, 10));
+    /* A colour index outside the palette is rejected, not truncated. */
+    assert(!paint_set(&p, 0, 0, PAINT_PALETTE_SIZE));
+}
+
+static void test_pack_round_trip(void)
+{
+    paint_t p, restored;
+    assert(paint_init(&p, 48, 56));
+    assert(paint_init(&restored, 48, 56));
+    paint_set(&p, 0, 0, 1);
+    paint_set(&p, 47, 55, 14);       /* last cell, odd index */
+    paint_set(&p, 5, 6, 15 - 1);
+    assert(paint_cell_count(&p) == 2688);
+    assert(paint_packed_size(&p) == 1344);
+
+    uint8_t buf[DADA_STORAGE_BLOB_MAX];
+    uint32_t wrote = paint_pack(&p, buf, sizeof(buf));
+    assert(wrote == 1344);
+    assert(paint_unpack(&restored, buf, wrote));
+    for (int i = 0; i < 48 * 56; i++) {
+        assert(restored.cells[i] == p.cells[i]);
+    }
+    /* A wrong length must be refused rather than half-applied. */
+    assert(!paint_unpack(&restored, buf, wrote - 1));
+    /* Too small a buffer is refused. */
+    assert(paint_pack(&p, buf, 100) == 0);
 }
 
 static void test_set_and_clear(void)
@@ -34,7 +60,7 @@ static void test_set_and_clear(void)
 
     paint_clear(&p);
     assert(paint_get(&p, 3, 4) == PAINT_COLOR_BG);
-    assert(paint_size(&p) == 64);
+    assert(paint_cell_count(&p) == 64);
 }
 
 static void test_stroke_fills_gaps(void)
@@ -76,11 +102,11 @@ static void test_bitmap_is_persistable(void)
     assert(paint_init(&p, 24, 28));
     paint_set(&p, 5, 6, PAINT_COLOR_6);
     /* The bitmap must fit the guaranteed blob size. */
-    assert(paint_size(&p) <= DADA_STORAGE_BLOB_MAX);
+    assert(paint_packed_size(&p) <= DADA_STORAGE_BLOB_MAX);
 
     /* Round trip through a byte copy, as storage would do. */
     uint8_t copy[PAINT_MAX_COLS * PAINT_MAX_ROWS];
-    memcpy(copy, p.cells, paint_size(&p));
+    memcpy(copy, p.cells, paint_cell_count(&p));
     assert(copy[6 * 24 + 5] == PAINT_COLOR_6);
 }
 
@@ -88,6 +114,7 @@ int main(void)
 {
     test_init_and_bounds();
     test_set_and_clear();
+    test_pack_round_trip();
     test_stroke_fills_gaps();
     test_horizontal_stroke_is_continuous();
     test_stroke_clips_at_edges();

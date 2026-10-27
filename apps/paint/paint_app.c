@@ -1,8 +1,9 @@
 /* Pixel art: display + input + storage, no hardware knowledge.
  *
- * Top strip picks a colour (or clears), the rest of the panel is a 24x28 grid.
- * Swipes are joined so fast strokes leave no gaps. The bitmap is saved to
- * storage when the finger lifts, and restored on start. */
+ * Top strip holds 15 colours plus a clear slot in two rows; the rest of the
+ * panel is a 48x56 grid of 5 px cells. Swipes are joined so fast strokes leave
+ * no gaps. The bitmap is packed 4 bits per cell (1344 bytes) and saved to
+ * storage when the finger lifts, then restored on start. */
 #include "app.h"
 
 #include <stdio.h>
@@ -10,14 +11,17 @@
 #include "canvas.h"
 #include "paint.h"
 
-#define COLS 24
-#define ROWS 28
-#define PALETTE_ENTRIES 8
+#define COLS 48
+#define ROWS 56
+#define SLOTS 16            /* 15 colours + clear */
+#define COLORS 15
 #define KEY_BITS "paint.bits"
 
-static const uint16_t PALETTE[7] = {
-    0x0000, /* background / eraser */
-    0xF800, 0x07E0, 0x001F, 0xFFE0, 0x07FF, 0xF81F,
+/* White background first, then the blues sampled from the reference art, then
+ * the darker shadow, the cheek pink and a bright eye blue. */
+static const uint16_t PALETTE[COLORS] = {
+    0xFFFF, 0xF75C, 0xCE5A, 0x9D37, 0x7C54, 0x7458, 0x5BB6, 0x5B74,
+    0x4B12, 0x42B1, 0x3A70, 0x424E, 0x29CC, 0x10C6, 0xF5D9,
 };
 
 static dada_app_services_t services;
@@ -33,6 +37,7 @@ static bool was_pressed;
 static bool dirty;
 static int last_gx;
 static int last_gy;
+static uint8_t packed[DADA_STORAGE_BLOB_MAX];
 
 static int grid_x(int gx) { return origin_x + gx * cell; }
 static int grid_y(int gy) { return origin_y + gy * cell; }
@@ -41,9 +46,6 @@ static void draw_cell(int gx, int gy)
 {
     uint8_t color = paint_get(&art, gx, gy);
     canvas_fill(&canvas, grid_x(gx), grid_y(gy), cell, cell, PALETTE[color]);
-    /* A one-pixel dark grid keeps individual cells readable. */
-    canvas_fill(&canvas, grid_x(gx), grid_y(gy), cell, 1, 0x2104);
-    canvas_fill(&canvas, grid_x(gx), grid_y(gy), 1, cell, 0x2104);
 }
 
 static dada_err_t flush_cells(int x0, int y0, int x1, int y1)
@@ -56,23 +58,25 @@ static dada_err_t flush_cells(int x0, int y0, int x1, int y1)
 
 static void draw_palette(void)
 {
-    int width = canvas.width / PALETTE_ENTRIES;
-    for (int i = 0; i < PALETTE_ENTRIES; i++) {
-        if (i < 7) {
-            canvas_fill(&canvas, i * width + 1, 1, width - 2, bar - 2, PALETTE[i]);
+    int slot_w = canvas.width / 8;
+    int slot_h = bar / 2;
+    for (int i = 0; i < SLOTS; i++) {
+        int x = (i % 8) * slot_w;
+        int y = (i / 8) * slot_h;
+        if (i < COLORS) {
+            canvas_fill(&canvas, x + 1, y + 1, slot_w - 2, slot_h - 2, PALETTE[i]);
         } else {
-            /* Clear button: white frame with an X. */
-            canvas_fill(&canvas, i * width + 1, 1, width - 2, bar - 2, 0x2104);
-            canvas_frame(&canvas, i * width + 3, 3, width - 6, bar - 6, 2, 0xFFFF);
-            for (int k = 0; k < width - 12; k++) {
-                canvas_fill(&canvas, i * width + 6 + k, 6 + k, 2, 2, 0xFFFF);
-                canvas_fill(&canvas, i * width + 6 + k, bar - 10 - k, 2, 2, 0xFFFF);
+            canvas_fill(&canvas, x + 1, y + 1, slot_w - 2, slot_h - 2, 0x2104);
+            canvas_frame(&canvas, x + 2, y + 2, slot_w - 4, slot_h - 4, 1, 0xFFFF);
+            for (int k = 0; k < slot_w - 8 && k < slot_h - 8; k++) {
+                canvas_fill(&canvas, x + 4 + k, y + 4 + k, 2, 2, 0xFFFF);
+                canvas_fill(&canvas, x + 4 + k, y + slot_h - 6 - k, 2, 2, 0xFFFF);
             }
         }
     }
-    /* Mark the active colour. */
-    int x = selected < 7 ? selected * width : 7 * width;
-    canvas_frame(&canvas, x + 1, 1, width - 2, bar - 2, 2, 0xFFFF);
+    int sx = (selected % 8) * slot_w;
+    int sy = (selected / 8) * slot_h;
+    canvas_frame(&canvas, sx, sy, slot_w, slot_h, 2, 0x07E0);
 }
 
 static dada_err_t redraw_all(void)
@@ -92,8 +96,12 @@ static dada_err_t save_bitmap(void)
     if (!services.storage || !services.storage->set_blob) {
         return DADA_OK; /* not persisting is a valid degradation */
     }
+    uint32_t length = paint_pack(&art, packed, sizeof(packed));
+    if (length == 0) {
+        return DADA_ERR_FAIL;
+    }
     dada_err_t err = services.storage->set_blob(services.storage->ctx, KEY_BITS,
-                                                art.cells, paint_size(&art));
+                                                packed, length);
     if (err == DADA_OK) {
         dirty = false;
     } else {
@@ -108,21 +116,26 @@ static void load_bitmap(void)
         return;
     }
     uint32_t length = 0;
-    if (!services.storage->get_blob(services.storage->ctx, KEY_BITS, art.cells,
-                                    paint_size(&art), &length)) {
+    if (!services.storage->get_blob(services.storage->ctx, KEY_BITS, packed,
+                                    sizeof(packed), &length)) {
         return;
     }
-    printf("paint: restored %u bytes\n", (unsigned)length);
+    if (paint_unpack(&art, packed, length)) {
+        printf("paint: restored %u bytes\n", (unsigned)length);
+    } else {
+        printf("paint: stored bitmap has an unexpected size (%u)\n", (unsigned)length);
+    }
 }
 
-static void pick_palette(int x)
+static void pick_palette(int x, int y)
 {
-    int width = canvas.width / PALETTE_ENTRIES;
-    int slot = x / width;
-    if (slot < 0 || slot >= PALETTE_ENTRIES) {
+    int slot_w = canvas.width / 8;
+    int slot_h = bar / 2;
+    int slot = (y / slot_h) * 8 + (x / slot_w);
+    if (slot < 0 || slot >= SLOTS) {
         return;
     }
-    if (slot == 7) {
+    if (slot >= COLORS) {
         paint_clear(&art);
         dirty = true;
         redraw_all();
@@ -139,7 +152,6 @@ static void paint_at(int x, int y)
     int gx = (x - origin_x) / cell;
     int gy = (y - origin_y) / cell;
     if (gx < 0 || gy < 0 || gx >= COLS || gy >= ROWS) {
-        /* Finger left the board: remember nothing so the next point restarts. */
         last_gx = -1;
         return;
     }
@@ -194,9 +206,10 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
         return err;
     }
 
-    selected = PAINT_COLOR_1;
+    selected = 6; /* a mid blue: the most useful starting colour on this art */
     last_gx = last_gy = -1;
-    printf("paint: %dx%d cells ready, tap a colour then draw\n", COLS, ROWS);
+    printf("paint: %dx%d cells, %d colours, %u bytes when saved\n", COLS, ROWS,
+           COLORS, (unsigned)paint_packed_size(&art));
     active = true;
     was_pressed = false;
     dirty = false;
@@ -224,8 +237,8 @@ dada_err_t dada_app_step(void)
     was_pressed = true;
 
     if (point.y < bar) {
-        if (last_gx != -2) { /* simple edge guard: pick once per entry */
-            pick_palette(point.x);
+        if (last_gx != -2) {
+            pick_palette(point.x, point.y);
             last_gx = -2;
         }
         return DADA_OK;
