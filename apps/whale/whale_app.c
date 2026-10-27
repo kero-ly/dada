@@ -12,20 +12,13 @@
 
 /* The artwork is landscape: 64x48 cells of 5 px fills a 320x240 area, which
  * is then rotated onto the 240x320 panel. */
-#define GRID_W 64
-#define GRID_H 48
-#define CELL_PX 5
+#define GRID_W 80
+#define GRID_H 60
+#define CELL_PX 4
 #define FRAME_CELLS (GRID_W * GRID_H)
 #define FRAME_BYTES ((FRAME_CELLS + 1) / 2)
-#define FRAMES 3
+#define FRAMES 1
 #define KEY_FRAME0 "whale.f0"
-#define KEY_FRAME1 "whale.f1"
-#define KEY_FRAME2 "whale.f2"
-/* A blink is a short sequence rather than a single swap: open -> half -> shut
- * -> half -> open, one step every BLINK_STEP_MS. */
-static const int BLINK_SEQ[] = {1, 2, 1};
-#define BLINK_STEPS ((int)(sizeof(BLINK_SEQ) / sizeof(BLINK_SEQ[0])))
-#define BLINK_STEP_MS 45
 
 static const uint16_t PALETTE[15] = {
     0xFFFF, 0xF75C, 0xCE5A, 0x9D37, 0x7C54, 0x7458, 0x5BB6, 0x5B74,
@@ -36,18 +29,6 @@ static dada_app_services_t services;
 static canvas_t canvas;
 static uint8_t frames[FRAMES][FRAME_CELLS];
 static bool have_frames;
-static int shown;              /* frame currently on screen */
-static int blink_step;         /* index into BLINK_SEQ, -1 when not blinking */
-static uint64_t blink_next_ms;
-static uint64_t next_blink;
-static uint32_t rng = 12345u;
-
-static uint32_t next_random(void)
-{
-    rng = rng * 1664525u + 1013904223u;
-    return rng >> 16;
-}
-
 static bool load_frame(int slot, const char *key)
 {
     if (!services.storage || !services.storage->get_blob) {
@@ -121,8 +102,7 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
     }
     canvas_clear(&canvas, 0x0000);
 
-    have_frames = load_frame(0, KEY_FRAME0) && load_frame(1, KEY_FRAME1) &&
-                  load_frame(2, KEY_FRAME2);
+    have_frames = load_frame(0, KEY_FRAME0);
     if (!have_frames) {
         printf("whale: no stored frames; draw one in paint and re-seed\n");
         draw_placeholder();
@@ -132,61 +112,14 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
             dada_app_stop();
             return err;
         }
-        uint64_t now = services.time->monotonic_ms(services.time->ctx);
-        next_blink = now + 2500;
-        printf("whale: %dx%d cells at %dpx, blinking\n", GRID_W, GRID_H, CELL_PX);
+        printf("whale: %dx%d cells at %dpx\n", GRID_W, GRID_H, CELL_PX);
     }
-    shown = 0;
-    blink_step = -1;
-    blink_next_ms = 0;
     return DADA_OK;
 }
 
 dada_err_t dada_app_step(void)
 {
-    uint64_t now = services.time->monotonic_ms(services.time->ctx);
-
-    if (!have_frames) {
-        return DADA_OK;
-    }
-    if (!have_frames) {
-        return DADA_OK;
-    }
-    if (blink_step >= 0) {
-        if (now < blink_next_ms) {
-            return DADA_OK;
-        }
-        blink_step++;
-        if (blink_step >= BLINK_STEPS) {
-            /* Sequence done: reopen and schedule the next blink. */
-            blink_step = -1;
-            dada_err_t err = draw_frame(0);
-            if (err != DADA_OK) {
-                return err;
-            }
-            shown = 0;
-            next_blink = now + 2200 + (next_random() % 2600);
-            return DADA_OK;
-        }
-        int target = BLINK_SEQ[blink_step];
-        dada_err_t err = draw_frame(target);
-        if (err != DADA_OK) {
-            return err;
-        }
-        shown = target;
-        blink_next_ms = now + BLINK_STEP_MS;
-        return DADA_OK;
-    }
-    if (now >= next_blink) {
-        blink_step = 0;
-        int target = BLINK_SEQ[0];
-        dada_err_t err = draw_frame(target);
-        if (err != DADA_OK) {
-            return err;
-        }
-        shown = target;
-        blink_next_ms = now + BLINK_STEP_MS;
-    }
+    /* Static picture: the frame is drawn once in start(). */
     return DADA_OK;
 }
 
