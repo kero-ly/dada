@@ -34,3 +34,8 @@ add_executable(test_paint test_paint.c ../../apps/paint/paint.c)
 target_include_directories(test_paint PRIVATE ../../contracts ../../apps/paint)
 target_compile_options(test_paint PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 add_test(NAME paint COMMAND test_paint)
+
+add_executable(test_flappy test_flappy.c ../../apps/flappy/flappy.c)
+target_include_directories(test_flappy PRIVATE ../../contracts ../../apps/flappy)
+target_compile_options(test_flappy PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+add_test(NAME flappy COMMAND test_flappy)
