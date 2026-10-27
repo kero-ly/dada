@@ -1,65 +1,51 @@
 # ADR 0004 · 许可证选择
 
-**Status:** Proposed · 2026-10-25 · **需要仓库所有者拍板，本文不能替代法律意见**
+**Status:** Accepted · 2026-10-27 · 仓库所有者确认采用 Apache-2.0
 
-> **Summary (EN).** Choose a license before accepting outside contributions, otherwise the
-> project cannot be legally reused. Recommendation: **Apache-2.0** (explicit patent grant +
-> contribution terms), with MIT as the lighter alternative. Separately: vendor code from the
-> board seller has **no license at all** and must never be copied into this repository.
+> **Summary (EN).** Unless otherwise noted, dada is licensed under Apache-2.0.
+> The canonical text is in the root LICENSE. Third-party materials retain their original
+> licenses; unlicensed vendor samples are not covered by this decision. Intentional
+> contributions are governed by section 5 unless explicitly stated otherwise or separately agreed.
 
 ## 背景
 
-仓库现在是**公开但无许可证**状态。这在法律上等于「保留所有权利」：别人不能合法使用、
-修改或分发。对一个目标是「开源平台」的项目，这是必须尽快解决的第一号问题。
+项目希望硬件厂商和应用作者能够参与，也允许商业产品采用。此前仓库未选定许可证，
+缺少对使用、修改与分发的明确授权。所有者于 2026-10-27 确认采用 Apache-2.0。
 
-更紧迫的是第二件事：**卖家提供的源码包没有任何 LICENSE 文件**。
+## 决策
 
-2026-10-24 的核查结果：
+### 1. 授权范围
 
-| 内容 | 授权状态 |
-| --- | --- |
-| 卖家自己的 PlatformIO 工程（`最新版程序优化后.rar`） | **无任何 LICENSE / COPYING / NOTICE**，文档中也未提及 |
-| TFT_eSPI 2.5.43（依赖） | BSD 系，允许商用与再分发 |
-| LVGL 8.4.0（依赖） | MIT |
-| ESP-IDF / Arduino-ESP32 | Apache-2.0 |
+根目录 [LICENSE](../../LICENSE) 保存 Apache License 2.0 的完整标准文本。
+除另有标注外，适用于仓库内项目自有的代码、文档和清单；不对第三方内容重新授权。
+当前不另设板级清单的数据许可证，也不要求下游独立应用一律采用 Apache-2.0。
 
-「拿到源码」不等于「拿到授权」。在没有明确许可的情况下，把它复制进仓库属于侵权，
-以后商用会被追责。**这条必须写进 CONTRIBUTING。**
+允许使用、修改、商用及闭源衍生开发，但分发时仍需满足许可证第 4 条，包括提供许可证、
+保留适用声明、醒目标记修改文件；若作品包含适用的 NOTICE，需保留其中相关归属声明。
+不要求下游公开修改或向本仓库提交 PR。
 
-## 决策（建议）
+选择理由是宽松的采用条件、明确且有范围限制的贡献者专利授权，以及明确的贡献规则。
+Apache-2.0 不保证不存在第三方专利风险，也不阻止别人 fork 或销售竞争产品。
+第 6 条不授予商标权；品牌使用政策与商标注册是独立事项，本决定不声称已有注册商标。
 
-### 1. 采用 Apache-2.0
+### 2. 贡献与第三方来源
 
-| 理由 | 说明 |
-| --- | --- |
-| 显式专利授权 | 硬件/固件项目会碰到实现专利问题，MIT 不含专利条款，Apache-2.0 有 |
-| 贡献条款明确 | 第 5 条直接定义「提交即授权」，省掉 CLA 的麻烦 |
-| 商标条款隔离 | 第 6 条明确不授予商标权，保护「搭搭」品牌，防止别人拿代码去冒充官方板 |
-| 生态兼容 | 与 ESP-IDF（Apache-2.0）同许可，企业采用时法务阻力最小 |
+有意提交供项目纳入的贡献遵循 Apache-2.0 第 5 条，除非贡献者明确另行声明或存在独立协议。
+贡献者应有权提交相关内容。第三方源码、依赖及素材保留各自许可证、版权声明和来源信息；
+不能通过放入本仓库自动转换成 Apache-2.0。
 
-MIT 更短更宽松，但对一个**要做生态、要防山寨**的平台，Apache-2.0 的两个额外条款
-（专利 + 商标）值得多出来的那点篇幅。
+商家提供源码不等于提供授权。未明确许可的示例或压缩包不得复制进公开仓库。
+可核对接口、引脚、初始化时序等事实，并依据可用资料实现适配；如实记录实际参考来源，
+不隐藏对商家资料的参考，也不将阅读源码后的重写自动称为独立 clean-room 实现。
 
-### 2. 厂商代码零容忍
+### 3. 依赖管理
 
-- **不得**把卖家工程中的任何源文件（含 `.ino`/`.cpp`/`.h`/`User_Setup.h`）复制进本仓库。
-- 允许的行为：阅读其引脚与初始化参数，**按 ESP-IDF 组件接口重写**（clean-room）。
-- 每个 `components/` 下的驱动，README 中注明「参考了哪些公开资料」（数据手册页码），
-  不注明「参考了卖家源码」。
-
-### 3. 依赖许可清单
-
-`LICENSES/` 目录记录直接依赖的名称、版本、许可与来源，CI 在依赖变更时提醒更新。
+新增或升级第三方依赖时，记录名称、版本、来源、许可证及所需声明，并检查分发要求。
+ESP-IDF 等上游包含多种许可的组件，不能仅用 SDK 的主要许可证概括所有依赖。
+统一依赖许可清单与自动审计尚未建立，本次决定不声称已完成完整供应链许可审计。
 
 ## 后果
 
-- 别人可以合法 fork、商用、二次分发。
-- 卖家日后若主张权利，仓库里没有可被指认的复制品。
-- 代价：贡献者提交的代码默认按 Apache-2.0 授权，需要在 CONTRIBUTING 里说清楚。
-
-## 未决问题
-
-1. 是否需要对**板级清单**（`board.json`）单独声明为 CC0/CC-BY？
-   清单是数据不是代码，单独授权更利于别人复用。
-2. 是否注册「搭搭 / dadastack / tessera」商标？（与 ADR 无关，但影响品牌策略）
-3. 商用衍生品（别人做板子预装 dada）是否要求署名或回馈？Apache-2.0 不要求，需另行决定。
+- README、贡献指南和智能体指南统一采用 Apache-2.0，不再标记许可证待定。
+- 第三方许可义务仍需逐项遵守；项目自有许可不覆盖未经授权的商家资料。
+- 后续如需变更许可证，必须评估贡献者权利和既有版本的授权，不能假定所有者可任意重新授权全部贡献。

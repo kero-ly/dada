@@ -124,4 +124,6 @@ Code and commits use English; documentation uses paired English/Chinese pages wh
 
 ## License
 
-The project intends to be open source; license selection remains open: [ADR 0004](docs/adr/0004-license.md).
+Unless otherwise noted, dada is licensed under the [Apache License 2.0](LICENSE).
+Third-party components retain their own licenses. This license does not grant rights to dada trademarks.
+See [ADR 0004](docs/adr/0004-license.md) for scope and contribution terms.

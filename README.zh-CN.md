@@ -114,4 +114,5 @@ CI 编译四个应用并运行主机及清单检查；实机验收按板卡和�
 
 ## 许可证
 
-项目计划开源，许可证尚待选定，见 [ADR 0004](docs/adr/0004-license.md)。
+除另有标注外，dada 采用 [Apache License 2.0](LICENSE)。第三方组件保留各自许可证；
+本许可证不授予 dada 商标使用权。授权范围与贡献约定见 [ADR 0004](docs/adr/0004-license.md)。
