@@ -2,9 +2,10 @@
  * @file storage.h
  * @brief Small persistent key/value store for application state.
  *
- * Deliberately tiny: unsigned 32-bit values keyed by a short name. That covers
- * high scores, counters, settings flags and progress markers without dragging
- * allocation semantics or a filesystem API into the contract.
+ * Deliberately small: unsigned 32-bit values and bounded blobs, keyed by a
+ * short name. That covers high scores, counters, settings flags, progress
+ * markers and small bitmaps without dragging allocation semantics or a
+ * filesystem API into the contract.
  *
  * Rules:
  *  - No ESP-IDF, FreeRTOS or filesystem types may appear here.
@@ -16,6 +17,9 @@
 #pragma once
 
 #include "dada_types.h"
+
+/** Smallest blob size every implementation must accept. */
+#define DADA_STORAGE_BLOB_MAX 1024
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +46,25 @@ struct dada_storage {
      * @return DADA_OK once the value is durable
      */
     dada_err_t (*set_u32)(void *ctx, const char *key, uint32_t value);
+
+    /**
+     * Store a blob.
+     *
+     * @param length  bytes to copy; implementations must support at least
+     *                DADA_STORAGE_BLOB_MAX
+     * @return DADA_OK once the value is durable
+     */
+    dada_err_t (*set_blob)(void *ctx, const char *key, const void *data, uint32_t length);
+
+    /**
+     * Read a blob.
+     *
+     * @param capacity  size of the caller's buffer
+     * @param out_length  written with the stored length when the call succeeds
+     * @return true when the key exists and fits in the buffer
+     */
+    bool (*get_blob)(void *ctx, const char *key, void *buffer, uint32_t capacity,
+                     uint32_t *out_length);
 
     /**
      * Remove a key. Erasing an absent key is not an error.

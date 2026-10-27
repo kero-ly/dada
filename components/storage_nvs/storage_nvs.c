@@ -46,6 +46,37 @@ static dada_err_t impl_set_u32(void *opaque, const char *key, uint32_t value)
     return DADA_OK;
 }
 
+static dada_err_t impl_set_blob(void *opaque, const char *key, const void *data, uint32_t length)
+{
+    nvs_ctx_t *ctx = (nvs_ctx_t *)opaque;
+    if (!ctx || !key || !data || length == 0) {
+        return DADA_ERR_INVALID_ARG;
+    }
+    if (length > DADA_STORAGE_BLOB_MAX) {
+        return DADA_ERR_INVALID_ARG;
+    }
+    if (nvs_set_blob(ctx->handle, key, data, length) != ESP_OK) {
+        ESP_LOGW(TAG, "blob write failed for '%s'", key);
+        return DADA_ERR_FAIL;
+    }
+    return nvs_commit(ctx->handle) == ESP_OK ? DADA_OK : DADA_ERR_FAIL;
+}
+
+static bool impl_get_blob(void *opaque, const char *key, void *buffer, uint32_t capacity,
+                          uint32_t *out_length)
+{
+    nvs_ctx_t *ctx = (nvs_ctx_t *)opaque;
+    if (!ctx || !key || !buffer || !out_length) {
+        return false;
+    }
+    size_t length = capacity;
+    if (nvs_get_blob(ctx->handle, key, buffer, &length) != ESP_OK) {
+        return false;
+    }
+    *out_length = (uint32_t)length;
+    return true;
+}
+
 static dada_err_t impl_erase(void *opaque, const char *key)
 {
     nvs_ctx_t *ctx = (nvs_ctx_t *)opaque;
@@ -99,6 +130,8 @@ dada_err_t storage_nvs_init(dada_storage_t **out)
     storage->ctx = ctx;
     storage->get_u32 = impl_get_u32;
     storage->set_u32 = impl_set_u32;
+    storage->set_blob = impl_set_blob;
+    storage->get_blob = impl_get_blob;
     storage->erase = impl_erase;
 
     *out = storage;
