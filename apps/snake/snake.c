@@ -64,7 +64,7 @@ int snake_init(snake_t *s, int w, int h, uint32_t seed)
     s->step_ms = 160;
     s->last_step_ms = 0;
     s->rng = seed ? seed : 1u;
-    s->turn_locked = false;
+    s->turn_count = 0;
     s->food_x = s->food_y = 0;
     return DADA_OK;
 }
@@ -100,24 +100,26 @@ void snake_start(snake_t *s, uint64_t now_ms)
     s->state = SNAKE_RUNNING;
     s->last_step_ms = now_ms;
     s->step_ms = 160;
-    s->turn_locked = false;
+    s->turn_count = 0;
     place_food(s);
 }
 
 bool snake_turn(snake_t *s, snake_dir_t dir)
 {
-    if (!s || s->state != SNAKE_RUNNING || s->turn_locked ||
-        dir < SNAKE_UP || dir > SNAKE_LEFT) {
+    if (!s || s->state != SNAKE_RUNNING || dir < SNAKE_UP || dir > SNAKE_LEFT) {
         return false;
     }
-    int current = (int)s->dir;
+    if (s->turn_count >= (int)(sizeof(s->turn_queue) / sizeof(s->turn_queue[0]))) {
+        return false; /* queue full: the player is spamming swipes */
+    }
+    /* Validate against the last direction that will actually be in effect, so
+     * "up then left" is accepted but "left while moving right" is not. */
+    int base = (int)(s->turn_count ? s->turn_queue[s->turn_count - 1] : s->dir);
     int wanted = (int)dir;
-    /* Reject reversal: (a + 2) % 4 is the opposite direction. */
-    if ((current + 2) % 4 == wanted || current == wanted) {
+    if ((base + 2) % 4 == wanted || base == wanted) {
         return false;
     }
-    s->dir = dir;
-    s->turn_locked = true;
+    s->turn_queue[s->turn_count++] = dir;
     return true;
 }
 
@@ -144,7 +146,15 @@ bool snake_tick(snake_t *s, uint64_t now_ms)
     }
     /* Drop any backlog: the game must not fast-forward after a long stall. */
     s->last_step_ms = now_ms;
-    s->turn_locked = false;
+
+    /* Apply at most one queued turn per step. */
+    if (s->turn_count > 0) {
+        s->dir = s->turn_queue[0];
+        for (int i = 1; i < s->turn_count; i++) {
+            s->turn_queue[i - 1] = s->turn_queue[i];
+        }
+        s->turn_count--;
+    }
 
     int head_x = s->body_x[0];
     int head_y = s->body_y[0];
