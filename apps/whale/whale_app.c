@@ -10,8 +10,11 @@
 
 #include "canvas.h"
 
-#define GRID_W 56
+/* The artwork is landscape: 64x48 cells of 5 px fills a 320x240 area, which
+ * is then rotated onto the 240x320 panel. */
+#define GRID_W 64
 #define GRID_H 48
+#define CELL_PX 5
 #define FRAME_CELLS (GRID_W * GRID_H)
 #define FRAME_BYTES ((FRAME_CELLS + 1) / 2)
 #define FRAMES 3
@@ -33,9 +36,6 @@ static dada_app_services_t services;
 static canvas_t canvas;
 static uint8_t frames[FRAMES][FRAME_CELLS];
 static bool have_frames;
-static int cell;
-static int origin_x;
-static int origin_y;
 static int shown;              /* frame currently on screen */
 static int blink_step;         /* index into BLINK_SEQ, -1 when not blinking */
 static uint64_t blink_next_ms;
@@ -73,16 +73,27 @@ static bool load_frame(int slot, const char *key)
     return true;
 }
 
+/* Paint the landscape frame rotated onto the panel, so the picture is upright
+ * when the board is held sideways. The inverse map avoids a second 150 KB
+ * buffer: logical (x, y) = (py, width-1-px). */
 static dada_err_t draw_frame(int slot)
 {
-    for (int y = 0; y < GRID_H; y++) {
-        for (int x = 0; x < GRID_W; x++) {
-            uint8_t c = frames[slot][y * GRID_W + x];
-            canvas_fill(&canvas, origin_x + x * cell, origin_y + y * cell,
-                        cell, cell, PALETTE[c]);
+    const int lw = GRID_W * CELL_PX;
+    const int lh = GRID_H * CELL_PX;
+    for (int py = 0; py < canvas.height; py++) {
+        for (int px = 0; px < canvas.width; px++) {
+            int lx = py;
+            int ly = canvas.width - 1 - px;
+            if (lx >= lw || ly >= lh) {
+                canvas.pixels[py * canvas.width + px] = 0x0000;
+                continue;
+            }
+            int gx = lx / CELL_PX;
+            int gy = ly / CELL_PX;
+            canvas.pixels[py * canvas.width + px] = PALETTE[frames[slot][gy * GRID_W + gx]];
         }
     }
-    return canvas_flush(&canvas, origin_x, origin_y, GRID_W * cell, GRID_H * cell);
+    return canvas_flush_all(&canvas);
 }
 
 static dada_err_t draw_placeholder(void)
@@ -110,12 +121,6 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
     }
     canvas_clear(&canvas, 0x0000);
 
-    int cw = canvas.width / GRID_W;
-    int ch = canvas.height / GRID_H;
-    cell = cw < ch ? cw : ch;
-    origin_x = (canvas.width - cell * GRID_W) / 2;
-    origin_y = (canvas.height - cell * GRID_H) / 2;
-
     have_frames = load_frame(0, KEY_FRAME0) && load_frame(1, KEY_FRAME1) &&
                   load_frame(2, KEY_FRAME2);
     if (!have_frames) {
@@ -129,7 +134,7 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
         }
         uint64_t now = services.time->monotonic_ms(services.time->ctx);
         next_blink = now + 2500;
-        printf("whale: %dx%d at %dpx, blinking\n", GRID_W, GRID_H, cell);
+        printf("whale: %dx%d cells at %dpx, blinking\n", GRID_W, GRID_H, CELL_PX);
     }
     shown = 0;
     blink_step = -1;
