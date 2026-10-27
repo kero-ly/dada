@@ -88,3 +88,8 @@ bool clock_is_running(const focus_clock_t *c)
 {
     return c && c->state == CLOCK_RUNNING;
 }
+
+bool clock_reset_hit(int y, int display_height)
+{
+    return display_height > 0 && y >= 0 && y >= display_height - 40;
+}

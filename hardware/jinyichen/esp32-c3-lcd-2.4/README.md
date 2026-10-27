@@ -1,16 +1,18 @@
 # 金逸晨 ESP32-C3 2.4 寸触摸开发板
 
-**状态：硬件已实测；ESP-IDF 下能编译、烧录、触摸可用，但显示尚未点亮（2026-10-26）。**
+**状态：ESP-IDF v5.4.2 下显示、触摸、计数器、番茄钟和贪吃蛇已有实机记录。**
+
+显示模式 3、反色与 RGB565 小端顺序已经验证；触摸网格坐标、一次冷启动、计数器/番茄钟交互、
+存储自检和贪吃蛇可玩性分别见 [`tests/hardware/records/`](../../../tests/hardware/records/)。
+贪吃蛇最高分断电持久化及长时间稳定性仍未覆盖，不能由存储组件自检替代。
 
 驱动实现契约、不含板级知识：`components/display_st7789`、`components/touch_cst836u`；
 本目录的 `board/` 是板级绑定，引脚来自构建期由 `board.json` 生成的
 `dada_board_config.h`。验证记录见
 [`tests/hardware/records/2026-10-25-idf-display-touch.md`](../../../tests/hardware/records/2026-10-25-idf-display-touch.md)。
 
-> **显示仍有阻塞**：同一块板、同一组引脚，Arduino + TFT_eSPI 固件显示正常，ESP-IDF 固件纯黑。
-> 已排除引脚、背光、初始化序列、SPI 时钟/mode、IOMUX、esp_lcd 等假设，详见
-> [`tests/hardware/records/2026-10-26-idf-display-blocked.md`](../../../tests/hardware/records/2026-10-26-idf-display-blocked.md)。
-> 因此 ESP-IDF 侧的「显示」能力**不写入 verified_capabilities 的依据**尚不成立。
+> 黑屏排查记录保留了修复前历史。该记录开头有最新实验结论，后续历史部分描述的是过期状态；
+> 当前应以顶部摘要和后续验收记录为准。
 
 ## 已核验事实
 
@@ -65,6 +67,6 @@ TFT_eSPI 2.5.43 + LVGL 8.4.0）。
 
 ## 待办
 
-- [ ] 在 ESP-IDF v5.4.2 下点亮屏幕（触摸已通过，显示阻塞中）
-- [ ] 确认 ST7789 色序（RGB/BGR）与偏移（色带测试无法判断，需要真实界面）
 - [ ] PCB 修订号：板上未标注，暂记 `null`
+- [ ] 验证贪吃蛇最高分在真实断电后仍能恢复
+- [ ] 长时间运行稳定性及快速连续手势

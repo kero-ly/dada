@@ -12,6 +12,7 @@
   },
   "display": null,
   "touch": null,
+  "declared_capabilities": [],
   "verified_capabilities": [],
   "provenance": {
     "soc": "vendor-doc",

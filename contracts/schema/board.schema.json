@@ -112,6 +112,15 @@
         ]
       }
     },
+    "declared_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "Capabilities this hardware package intends to provide; verification is recorded separately.",
+      "items": {
+        "type": "string",
+        "enum": ["audio", "storage", "time", "wifi", "ble"]
+      }
+    },
     "provenance": {
       "type": "object",
       "description": "JSON path -> evidence level. Every non-null leaf of the manifest must be covered.",

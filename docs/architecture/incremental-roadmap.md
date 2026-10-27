@@ -1,5 +1,7 @@
 # Incremental platform architecture
 
+> 2026-10-27 update: no new hardware is available. Improve the current board experience, documentation and contribution workflow first. Board + module + composition remains the direction, with implementation deferred until real peripherals validate it. See [developer boundaries](developer-boundaries.md).
+
 Validate one delivery path first: app requirements → board selection → capability check →
 build → flash → physical acceptance. A second physical board running unchanged app sources
 is the first meaningful portability gate.
@@ -10,8 +12,8 @@ is the first meaningful portability gate.
 
 | Layer | Current implementation | Later, when validated |
 | --- | --- | --- |
-| Developer applications | `apps/touch-counter`, `apps/bringup`, `apps/focus-clock`; native C and contracts only | External apps |
-| Device platform | Display/input/time contracts, experimental lifecycle, firmware composition root, board bindings and reusable drivers | Shared event/UI services extracted from actual applications |
+| Developer applications | `touch-counter`, `bringup`, `focus-clock`, `snake`; native C and contracts only | External apps |
+| Device platform | Display/input/time/storage contracts, experimental lifecycle, injected C3 timer/NVS and app-side shared canvas | Services extracted from more applications and boards |
 | Physical hardware | One C3 board, ST7789 panel, CST836U pointer input | A second documented ESP32 board with different display configuration |
 | Host platform tools | Local manifests, basic compatibility checks, generated configuration, delegated IDF build/flash | Versioned board packages, resource constraints and reproducible verification |
 
@@ -27,7 +29,7 @@ A hardware description alone cannot support an unknown chip without drivers and 
 | 2 Counter loop | done | count/reset accepted on device; clean-clone build reproduced by CI across three apps |
 | 3 Offline pomodoro | first version accepted | `apps/focus-clock` runs with an injected `time` contract; one full session accepted end-to-end with a 2-minute build; the real 25-minute length has not been waited out |
 | 4 Second physical board | not started | needs a board decision, not a roadmap label |
-| 5 External hardware contribution | not started | templates and compatibility rules still missing |
+| 5 External hardware contribution | guide and issue template ready; no external board submitted | needs a non-maintainer to complete an end-to-end contribution |
 | 6 Application ecosystem | not started | SDK and compatibility matrix come first |
 
 ## Acceptance gates
@@ -58,5 +60,5 @@ are not a complete matching engine. No dynamic installation or multi-app executi
 Build output is isolated per board/app; `firmware/sdkconfig` is still shared local configuration
 for this C3 project. Cross-chip configuration isolation belongs to the second-board milestone.
 
-Next: accept the flashed counter, capture orientation/touch and cold-start evidence, ask another
-team member to reproduce it, then implement the offline pomodoro before buying the next board.
+Next: have a non-maintainer follow the new [board contribution guide](../hardware/board-contribution.md)
+end to end, record friction and elapsed time, then choose a second physical ESP32 board.

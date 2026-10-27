@@ -65,7 +65,7 @@ dada_err_t dada_app_step(void)
         bool clicked = pressed && !was_pressed;
         was_pressed = pressed;
         if (clicked) {
-            if (point.y >= services.display->height * 3 / 4) {
+            if (clock_reset_hit(point.y, services.display->height)) {
                 clock_reset(&clock);
                 printf("focus: reset\n");
             } else {

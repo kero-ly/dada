@@ -11,6 +11,24 @@ dada 致力于连接应用开发者与硬件生态。
 
 > 当前阶段：ESP32-C3 首板验证。以下生态和架构图展示平台愿景，已实现能力见「当前进展」。
 
+## 我可以贡献什么？
+
+**当前支持一块 C3 一体板；“板 + 配件 + 组合”是已确认的扩展方向，尚未实现组合框架。**
+
+| 你想做什么 | 发力点 | 入口 |
+| --- | --- | --- |
+| 开发应用 | 在 `apps/` 写业务，通过契约使用硬件，不写 GPIO 或板型分支 | [应用与平台边界](docs/architecture/developer-boundaries.zh-CN.md) |
+| 适配开发板 | 在 `hardware/<vendor>/<board>/` 提供描述、绑定和实机证据；仍需商家资料 | [新板接入指南](docs/hardware/board-contribution.zh-CN.md) |
+| 扩展配件 | 先确认真实模块与可用接口、跑通最小适配，再提取模块包和组合接线 | [配件与组合约定](docs/architecture/developer-boundaries.zh-CN.md#已确认方向板--配件--组合) |
+| 改善工具、测试或文档 | 降低构建、刷机和贡献门槛 | [贡献规则](CONTRIBUTING.md) |
+
+板包负责固定板载器件，配件包负责可复用外设，组合记录具体接线，应用声明能力需求。
+同一个应用只在满足能力、资源与验证条件的硬件上复用；不是所有 C3 都能直接烧同一份固件。
+必需能力缺失时拒绝构建；可选能力降级属于后续设计，音频接口也尚未实现。
+
+现在保留已有一体板结构，不先建空目录或通用组合框架。先改善现有板体验，拿到真实配件后再验证扩展。
+开发前请读[完整开发者指南](docs/architecture/developer-boundaries.zh-CN.md)；智能体请读 [AGENT.md](AGENT.md)（自动入口 [AGENTS.md](AGENTS.md)）。
+
 ## 平台愿景：应用与硬件自由组合
 
 ![dada 平台生态愿景：应用开发者与硬件厂商贡献应用和硬件包，平台负责匹配、构建、验证与交付，产品开发者和用户选择兼容组合；AI 和本地服务按需接入。](docs/assets/architecture/platform-ecosystem-vision.png)
@@ -35,11 +53,10 @@ dada 致力于连接应用开发者与硬件生态。
 ## 当前进展
 
 - 首板：金逸晨 ESP32-C3 + 2.4 寸 ST7789 屏 + CST836U 触摸，工具链 **ESP-IDF v5.4.2**。
-- 已有显示/输入契约、可复用驱动、板级清单及配置头文件生成。
-- 两个可选择的原生 C 应用：`touch-counter` 触摸计数器（默认）、`bringup` 色带与触摸诊断。
-- 已有实验性的单应用生命周期、服务注入、主机测试与本地交付 CLI。
-- 色带颜色和触摸事件已获实机确认；计数器交互与断电重启单独记录在
-  [硬件记录](tests/hardware/records/)中。
+- 已有显示、输入、单调时间、存储契约；提供 NVS 存储及板级清单配置生成。
+- 四个可选择的原生 C 应用：`touch-counter`（默认）、`bringup`、`focus-clock`、`snake`。
+- 已有实验性单应用生命周期、服务注入、应用侧共享画布、主机测试与本地交付 CLI。
+- 显示、触摸、计数器、番茄钟和贪吃蛇均有对应实机记录，见[硬件记录](tests/hardware/records/)。
 
 尚无通用运行时、应用 IR 编译器、自动硬件发现、包市场、AI 连接器和第二块受支持的板子。
 先用原生 C 应用检验契约；[ADR 0005](docs/adr/0005-app-ir.md) 的声明式应用仍是提案。
@@ -56,10 +73,13 @@ python tools/dada.py flash --port YOUR_PORT
 python tools/dada.py monitor --port YOUR_PORT
 # 切换到硬件诊断应用，使用独立构建目录：
 python tools/dada.py build --app bringup
+# 新 C3 板尚未验收时，显式构建诊断固件：
+python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverified
 ```
 
 烧录会替换原固件，需要恢复时请保留备份。
 环境安装见[开发指南](docs/development.md)，交互说明见[计数器说明](apps/touch-counter/README.zh-CN.md)。
+接入 ESP32-C3 新板见[板卡贡献指南](docs/hardware/board-contribution.zh-CN.md)。
 
 ## 从首板到平台
 
@@ -72,6 +92,7 @@ python tools/dada.py build --app bringup
 | --- | --- |
 | 当前 C3 实现与交付流程 | [实现架构](docs/architecture/current-implementation.md) |
 | 环境安装、构建、烧录与团队协作 | [开发指南](docs/development.md) |
+| 接入并验收一块 ESP32-C3 板卡 | [板卡贡献指南](docs/hardware/board-contribution.zh-CN.md) |
 | 能力契约、板级清单、应用形态 | [架构决策 ADR](docs/adr/README.md) |
 | 命令行工具与清单校验 | [主机工具](tools/README.md) |
 | 实机测试证据与待验收项目 | [硬件记录](tests/hardware/records/) |
@@ -86,7 +107,7 @@ python3 -m unittest discover -s tests/host -p 'test_*.py'
 ```
 
 见 [CONTRIBUTING.md](CONTRIBUTING.md)、[架构决策](docs/adr/README.md)与[主机工具](tools/README.md)。
-CI 编译两个应用并运行主机及清单检查，显示和触摸仍需实机验收记录。
+CI 编译四个应用并运行主机及清单检查；实机验收按板卡和能力查看硬件记录。
 不上传或复制没有合适许可证的商家示例；`dada verify` 尚未实现。
 
 代码、提交信息用英文，文档逐步提供中英版本。

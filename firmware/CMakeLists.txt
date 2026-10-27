@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 # ---------------------------------------------------------------------------
 set(DADA_BOARD "jinyichen-esp32-c3-lcd-2.4" CACHE STRING "Board manifest id")
 set(DADA_APP "touch-counter" CACHE STRING "Native app id")
+option(DADA_ALLOW_UNVERIFIED "Allow local bring-up against declared, unverified capabilities" OFF)
 set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup focus-clock snake)
 # Pomodoro length, in minutes. Defaults to the real 25; override for a quick
 # end-to-end run: idf.py -DDADA_FOCUS_MINUTES=2 build
@@ -35,9 +36,13 @@ if(NOT DADA_PYTHON)
 endif()
 
 # Fail capability mismatch before compiling or touching a device.
+set(DADA_SELECTION_ARGS)
+if(DADA_ALLOW_UNVERIFIED)
+    list(APPEND DADA_SELECTION_ARGS --allow-unverified)
+endif()
 execute_process(
     COMMAND "${DADA_PYTHON}" "${CMAKE_CURRENT_LIST_DIR}/../tools/dada.py"
-            check --board "${DADA_BOARD}" --app "${DADA_APP}"
+            check --board "${DADA_BOARD}" --app "${DADA_APP}" ${DADA_SELECTION_ARGS}
     RESULT_VARIABLE DADA_APP_RC
     ERROR_VARIABLE DADA_APP_ERR
 )

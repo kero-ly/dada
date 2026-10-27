@@ -64,6 +64,7 @@ int snake_init(snake_t *s, int w, int h, uint32_t seed)
     s->step_ms = 160;
     s->last_step_ms = 0;
     s->rng = seed ? seed : 1u;
+    s->turn_locked = false;
     s->food_x = s->food_y = 0;
     return DADA_OK;
 }
@@ -99,21 +100,25 @@ void snake_start(snake_t *s, uint64_t now_ms)
     s->state = SNAKE_RUNNING;
     s->last_step_ms = now_ms;
     s->step_ms = 160;
+    s->turn_locked = false;
     place_food(s);
 }
 
-void snake_turn(snake_t *s, snake_dir_t dir)
+bool snake_turn(snake_t *s, snake_dir_t dir)
 {
-    if (!s || s->state != SNAKE_RUNNING) {
-        return;
+    if (!s || s->state != SNAKE_RUNNING || s->turn_locked ||
+        dir < SNAKE_UP || dir > SNAKE_LEFT) {
+        return false;
     }
     int current = (int)s->dir;
     int wanted = (int)dir;
     /* Reject reversal: (a + 2) % 4 is the opposite direction. */
     if ((current + 2) % 4 == wanted || current == wanted) {
-        return;
+        return false;
     }
     s->dir = dir;
+    s->turn_locked = true;
+    return true;
 }
 
 bool snake_body_at(const snake_t *s, int x, int y)
@@ -139,6 +144,7 @@ bool snake_tick(snake_t *s, uint64_t now_ms)
     }
     /* Drop any backlog: the game must not fast-forward after a long stall. */
     s->last_step_ms = now_ms;
+    s->turn_locked = false;
 
     int head_x = s->body_x[0];
     int head_y = s->body_y[0];

@@ -17,14 +17,18 @@ python tools/dada.py ports
 python tools/dada.py flash --app touch-counter --port YOUR_PORT
 python tools/dada.py monitor --app touch-counter --port YOUR_PORT
 python tools/dada.py build --app bringup
+# first diagnostic build on a new, declared but unverified board
+python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverified
 ```
 
 默认板 `jinyichen-esp32-c3-lcd-2.4`，可用 `--board` 显式指定。
-构建前检查板级绑定、原生 C 应用格式、所需 display/input 与最小屏幕尺寸，
-然后调用 ESP-IDF；不自动下载 SDK 或选择串口。
+构建前检查板级绑定、原生 C 应用格式、所需能力与最小屏幕尺寸，然后调用 ESP-IDF；
+不自动下载 SDK 或选择串口。正常模式要求所需能力已声明并经过硬件验证。
+新板本地诊断时可显式使用 `--allow-unverified`：只能使用清单已声明的硬件能力，
+CLI 和 CMake 都会携带该 opt-in；它不授予支持状态或绕过编译检查。
 各选择的构建产物放在 `firmware/build/<board>--<app>/`。
 `sdkconfig` 仍由当前 C3 集成工程共享；完整资源匹配和跨芯片配置隔离尚未实现。
-`check` 检查声明兼容性，不等同于实机认证，也不替代下方完整板级 Schema 检查。
+`check --allow-unverified` 检查声明是否足以构建 bring-up，不等同于实机认证，也不替代完整板级 Schema 检查。
 
 ## validate_manifests.py
 
@@ -74,3 +78,9 @@ python tools/gen_board_config.py --all -o build/board-config
 
 - `dada verify`：实机自检并产出报告（见 ADR 0003），需要先有驱动与自检固件。
 - 完整跨板匹配、版本兼容、资源估算与包分发：在第二块板及外部贡献验证后推进。
+
+## Add a board
+
+当前 ESP32-C3 板卡的接入步骤、bring-up 命令、证据等级和限制见
+[English](../docs/hardware/board-contribution.md) / [简体中文](../docs/hardware/board-contribution.zh-CN.md)。
+新贡献者可先提交 [New board proposal](../.github/ISSUE_TEMPLATE/new_board.md) 收集板卡资料。

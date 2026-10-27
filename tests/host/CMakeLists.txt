@@ -13,11 +13,17 @@ add_executable(test_clock test_clock.c ../../apps/focus-clock/clock.c)
 target_include_directories(test_clock PRIVATE ../../contracts ../../apps/focus-clock)
 target_compile_options(test_clock PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 add_test(NAME clock COMMAND test_clock)
+target_include_directories(test_clock PRIVATE ../../contracts)
 
 add_executable(test_snake test_snake.c ../../apps/snake/snake.c)
 target_include_directories(test_snake PRIVATE ../../contracts ../../apps/snake)
 target_compile_options(test_snake PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 add_test(NAME snake COMMAND test_snake)
+
+add_executable(test_snake_best test_snake_best.c ../../apps/snake/best_score.c)
+target_include_directories(test_snake_best PRIVATE ../../contracts ../../apps/snake)
+target_compile_options(test_snake_best PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+add_test(NAME snake_best COMMAND test_snake_best)
 
 add_executable(test_canvas test_canvas.c ../../apps/app_support/canvas.c)
 target_include_directories(test_canvas PRIVATE ../../contracts ../../apps/app_support)

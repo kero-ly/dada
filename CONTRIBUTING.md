@@ -1,11 +1,17 @@
 # 团队协作
 
+先从[开发者入口与平台边界](docs/architecture/developer-boundaries.zh-CN.md)选择贡献方向：应用、板卡、配件、平台工具或验证文档。智能体读取 [AGENT.md](AGENT.md)。
+
 1. 先读 README.md 与 docs/development.md，使用 ESP-IDF v5.4.2。
 2. 动手前看一眼 `docs/adr/`：分层边界、板级清单、验证协议、应用形态都已经有决策，避免重复讨论。
 3. 术语以 `docs/glossary.md` 为准（中英对照），新概念先加到术语表再写代码。
 4. 从 main 创建短期分支，例如 `feat/c3-display`、`fix/touch-coordinates`。
 5. 每个 PR 聚焦一个功能；说明改动、构建结果及硬件验证情况。
 6. 合并前通过 CI，涉及硬件时附 tests/hardware/ 中的测试记录。
+
+新增 ESP32-C3 板卡按[板卡接入指南](docs/hardware/board-contribution.zh-CN.md)操作：
+先用 `bringup --allow-unverified` 编译并在实机验证，再把已验证能力写入清单。
+该选项不能代替驱动、板级绑定或验收记录。其他 ESP32 SoC 暂不在当前固件构建支持范围。
 
 ## 边界
 
@@ -15,7 +21,7 @@
 - components/：跨板可复用驱动。
 - firmware/：集成入口；tools/：主机侧构建交付。
 
-不要把未来抽象提前写满。先跑通厂商示例，再从真实应用抽取接口。
+板 + 配件 + 组合是已确认方向，目前尚未实现。保留现有一体板结构，不创建空目录或提前实现通用组合框架；有真实配件后先最小适配和共存验证，再提取模块与组合。商家示例可用于验证硬件事实，但不是接入的强制前置工程，也不得替代许可和来源检查。
 
 ## 提交内容
 

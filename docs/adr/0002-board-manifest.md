@@ -39,6 +39,7 @@
     "controller": "CST836U", "bus": "i2c", "address": "0x15",
     "pins": { "scl": 5, "sda": 4, "int": 3, "rst": 2 }
   },
+  "declared_capabilities": ["time", "storage"],
   "verified_capabilities": ["usb-serial-jtag", "display", "touch"],
   "provenance": {
     "flash_mb": "measured",
@@ -94,7 +95,14 @@
 
 理由：320KB RAM 不该养 JSON 解析器；配置错误在编译期暴露，而不是现场黑屏。
 
-### 4. 能力断言在编译期完成
+### 4. 声明能力与验证能力分开
+
+`display`、`touch` / `input` 由对应硬件章节声明；不能从硬件结构直接推断的能力
+（如 `time`、`storage`、`wifi`）写入 `declared_capabilities`。只有经过实机验收的能力才
+写入 `verified_capabilities`。缺少验证字段按空列表处理，不能推断为已验证。
+本地诊断构建可显式允许“已声明但未验证”的能力；正常构建必须同时满足声明与验证。
+
+### 5. 能力断言在构建期完成
 
 应用声明它需要的能力，构建系统检查目标板是否满足：
 

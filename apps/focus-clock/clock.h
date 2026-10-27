@@ -34,3 +34,6 @@ void clock_tick(focus_clock_t *c, uint64_t now_ms);
 uint32_t clock_remaining_ms(const focus_clock_t *c);
 
 bool clock_is_running(const focus_clock_t *c);
+
+/** The visible reset strip occupies the bottom 40 pixels of the panel. */
+bool clock_reset_hit(int y, int display_height);

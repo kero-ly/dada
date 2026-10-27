@@ -103,6 +103,16 @@ static void test_done_restarts_and_reset_keeps_completed(void)
     assert(c.completed == 1);
 }
 
+static void test_reset_zone_matches_rendered_bottom_strip(void)
+{
+    assert(!clock_reset_hit(279, 320));
+    assert(clock_reset_hit(280, 320));
+    assert(!clock_reset_hit(159, 200));
+    assert(clock_reset_hit(160, 200));
+    assert(!clock_reset_hit(-1, 320));
+    assert(!clock_reset_hit(0, 0));
+}
+
 int main(void)
 {
     test_initial_state();
@@ -111,6 +121,7 @@ int main(void)
     test_finishes_exactly_at_zero();
     test_clock_going_backwards_is_ignored();
     test_done_restarts_and_reset_keeps_completed();
+    test_reset_zone_matches_rendered_bottom_strip();
     printf("clock: all tests passed\n");
     return 0;
 }

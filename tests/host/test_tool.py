@@ -51,12 +51,14 @@ class DeliveryTests(unittest.TestCase):
             manifest = board_dir / "board.json"
             manifest.write_text(json.dumps(board))
             with self.assertRaisesRegex(ValueError, "input"):
-                dada.resolve_selection("vendor-board", "touch-counter", root)
+                dada.resolve_selection("vendor-board", "touch-counter", root,
+                                       allow_unverified=True)
             board["touch"] = {"controller": "example"}
             board["display"]["width"] = 80
             manifest.write_text(json.dumps(board))
             with self.assertRaisesRegex(ValueError, "display"):
-                dada.resolve_selection("vendor-board", "touch-counter", root)
+                dada.resolve_selection("vendor-board", "touch-counter", root,
+                                       allow_unverified=True)
 
     def test_verified_capabilities_govern_time(self):
         """An explicit verified list wins; time must be declared, not assumed."""
@@ -74,17 +76,78 @@ class DeliveryTests(unittest.TestCase):
                 "id": "vendor-board",
                 "display": {"width": 240, "height": 320},
                 "touch": {"controller": "example"},
+                "declared_capabilities": ["time"],
                 "verified_capabilities": ["display", "touch"],
             }
             manifest = board_dir / "board.json"
             manifest.write_text(json.dumps(board))
             with self.assertRaisesRegex(ValueError, "time"):
                 dada.resolve_selection("vendor-board", "focus-clock", root)
+            dada.resolve_selection("vendor-board", "focus-clock", root,
+                                   allow_unverified=True)
 
             board["verified_capabilities"] = ["display", "touch", "time"]
             manifest.write_text(json.dumps(board))
             datum = dada.resolve_selection("vendor-board", "focus-clock", root)
             self.assertEqual(datum[0], board_dir)
+
+    def test_empty_verified_list_requires_explicit_bringup_opt_in(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            board_dir = root / "hardware/vendor/board"
+            app_dir = root / "apps/touch-counter"
+            board_dir.mkdir(parents=True)
+            (board_dir / "board").mkdir()
+            (board_dir / "board/CMakeLists.txt").write_text("# binding")
+            app_dir.mkdir(parents=True)
+            (app_dir / "app.json").write_text((ROOT / "apps/touch-counter/app.json").read_text())
+            board = {
+                "id": "vendor-board",
+                "display": {"width": 240, "height": 320},
+                "touch": {"controller": "example"},
+                "declared_capabilities": [],
+                "verified_capabilities": [],
+            }
+            manifest = board_dir / "board.json"
+            manifest.write_text(json.dumps(board))
+
+            with self.assertRaisesRegex(ValueError, "not hardware-verified"):
+                dada.resolve_selection("vendor-board", "touch-counter", root)
+            dada.resolve_selection("vendor-board", "touch-counter", root,
+                                   allow_unverified=True)
+
+            del board["touch"]
+            manifest.write_text(json.dumps(board))
+            with self.assertRaisesRegex(ValueError, "lacks declared capability"):
+                dada.resolve_selection("vendor-board", "touch-counter", root,
+                                       allow_unverified=True)
+
+    def test_missing_verification_record_is_not_trusted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            board_dir = root / "hardware/vendor/board"
+            app_dir = root / "apps/touch-counter"
+            board_dir.mkdir(parents=True)
+            (board_dir / "board").mkdir()
+            (board_dir / "board/CMakeLists.txt").write_text("# binding")
+            app_dir.mkdir(parents=True)
+            (app_dir / "app.json").write_text(
+                (ROOT / "apps/touch-counter/app.json").read_text())
+            (board_dir / "board.json").write_text(json.dumps({
+                "id": "vendor-board",
+                "display": {"width": 240, "height": 320},
+                "touch": {"controller": "example"},
+            }))
+            with self.assertRaisesRegex(ValueError, "not hardware-verified"):
+                dada.resolve_selection("vendor-board", "touch-counter", root)
+            dada.resolve_selection("vendor-board", "touch-counter", root,
+                                   allow_unverified=True)
+
+    def test_unverified_flag_reaches_cmake_and_flash(self):
+        cmd = dada.command("flash", BOARD, "touch-counter", "/dev/cu.example",
+                           allow_unverified=True)
+        self.assertIn("-DDADA_ALLOW_UNVERIFIED=ON", cmd)
+        self.assertEqual(cmd[-1], "flash")
 
 
 if __name__ == "__main__":

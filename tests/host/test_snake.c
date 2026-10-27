@@ -46,10 +46,14 @@ static void test_turn_rejects_reversal(void)
 {
     snake_t s = make(12, 14);
     snake_start(&s, 0);                        /* moving right */
-    snake_turn(&s, SNAKE_LEFT);                /* would reverse */
+    assert(!snake_turn(&s, SNAKE_LEFT));       /* would reverse */
     assert(s.dir == SNAKE_RIGHT);
-    snake_turn(&s, SNAKE_UP);
+    assert(snake_turn(&s, SNAKE_UP));
     assert(s.dir == SNAKE_UP);
+    assert(!snake_turn(&s, SNAKE_LEFT));       /* two quick swipes cannot reverse */
+    assert(s.dir == SNAKE_UP);
+    assert(snake_tick(&s, s.last_step_ms + s.step_ms));
+    assert(snake_turn(&s, SNAKE_LEFT));        /* next movement interval accepts a turn */
     snake_free(&s);
 }
 

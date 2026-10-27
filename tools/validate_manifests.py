@@ -32,6 +32,7 @@ PROVENANCE_EXEMPT = {
     "status",
     "hardware_revision",
     "verified_capabilities",
+    "declared_capabilities",
     "provenance",
     "source_url",
 }
@@ -104,6 +105,16 @@ def check_manifest(path: Path, schema: dict[str, Any]) -> tuple[list[str], list[
 
     status = manifest["status"]
     caps = manifest["verified_capabilities"]
+    declared_caps = set(manifest.get("declared_capabilities") or [])
+    inferred_declared = set()
+    if manifest.get("display") is not None:
+        inferred_declared.add("display")
+    if manifest.get("touch") is not None:
+        inferred_declared.update(("touch", "input"))
+    if (manifest.get("usb") or {}).get("mode") == "serial-jtag":
+        inferred_declared.add("usb-serial-jtag")
+    if (set(caps) - inferred_declared) - declared_caps:
+        errors.append("verified_capabilities contains capabilities not declared by hardware sections or declared_capabilities")
     if status == "verified" and not caps:
         errors.append("status is 'verified' but verified_capabilities is empty")
     if status in ("planned", "purchased") and caps:

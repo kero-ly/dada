@@ -35,6 +35,7 @@ typedef struct {
     uint32_t step_ms;
     uint64_t last_step_ms;
     uint32_t rng;
+    bool turn_locked;
 } snake_t;
 
 /** Allocate the body; w and h are grid cells. Returns DADA_OK on success. */
@@ -45,7 +46,7 @@ void snake_free(snake_t *s);
 void snake_start(snake_t *s, uint64_t now_ms);
 
 /** Request a direction change; reversing into yourself is ignored. */
-void snake_turn(snake_t *s, snake_dir_t dir);
+bool snake_turn(snake_t *s, snake_dir_t dir);
 
 /**
  * Advance the simulation if enough time has passed.

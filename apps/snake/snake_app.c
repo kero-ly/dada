@@ -8,6 +8,7 @@
 
 #include "render.h"
 #include "snake.h"
+#include "best_score.h"
 
 #define GRID_W 12
 #define GRID_H 14
@@ -164,10 +165,13 @@ dada_err_t dada_app_step(void)
     if (game.state == SNAKE_OVER) {
         printf("snake: game over, score %u\n", (unsigned)game.score);
         if (game.score > best_score) {
-            best_score = game.score;
-            if (services.storage) {
-                services.storage->set_u32(services.storage->ctx, "snake.best", best_score);
-                printf("snake: new best %u\n", (unsigned)best_score);
+            dada_err_t save_err = snake_update_best(services.storage, game.score, &best_score);
+            if (save_err == DADA_OK) {
+                printf("snake: new best saved %u\n", (unsigned)best_score);
+            } else if (save_err == DADA_ERR_NOT_SUPPORTED) {
+                printf("snake: new best %u (not persisted)\n", (unsigned)best_score);
+            } else {
+                printf("snake: failed to save best %u (%d)\n", (unsigned)game.score, save_err);
             }
         }
         return snake_view_overlay(&view, &game);

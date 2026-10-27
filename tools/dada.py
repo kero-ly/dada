@@ -13,7 +13,7 @@ DEFAULT_BOARD = "jinyichen-esp32-c3-lcd-2.4"
 DEFAULT_APP = "touch-counter"
 
 
-def resolve_selection(board_id, app_id, root=ROOT):
+def resolve_selection(board_id, app_id, root=ROOT, allow_unverified=False):
     """Validate known native app requirements against declared board capabilities."""
     for name in (board_id, app_id):
         if not re.fullmatch(r"[a-z0-9]+(?:[.-][a-z0-9]+)*", name):
@@ -34,27 +34,27 @@ def resolve_selection(board_id, app_id, root=ROOT):
     app = json.loads((app_dir / "app.json").read_text(encoding="utf-8-sig"))
     if app.get("id") != app_id or app.get("format") != "native-c-v1":
         raise ValueError("unsupported app manifest: " + app_id)
-    # An explicit verified_capabilities list wins, because it records what was
-    # actually proven on hardware. Manifests that predate that field fall back
-    # to inferring from the sections they declare. "touch" implies input.
+    # Missing verification data is never evidence of verification.
     verified = set(board.get("verified_capabilities") or [])
-    if verified:
-        capabilities = {
-            "display": "display" in verified,
-            "input": "input" in verified or "touch" in verified,
-            "time": "time" in verified,
-            "storage": "storage" in verified,
-        }
-    else:
-        capabilities = {
-            "display": bool(board.get("display")),
-            "input": bool(board.get("touch")),
-            "time": False,
-            "storage": False,
-        }
+    declared_extra = set(board.get("declared_capabilities") or [])
+    declared = {
+        "display": bool(board.get("display")),
+        "input": bool(board.get("touch")),
+        "time": "time" in declared_extra,
+        "storage": "storage" in declared_extra,
+    }
+    capabilities = {
+        "display": "display" in verified,
+        "input": "input" in verified or "touch" in verified,
+        "time": "time" in verified,
+        "storage": "storage" in verified,
+    }
     for required in app["requires"]:
-        if not capabilities.get(required, False):
-            raise ValueError("board lacks required capability: " + required)
+        if not declared.get(required, False):
+            raise ValueError("board lacks declared capability: " + required)
+        if not allow_unverified and not capabilities.get(required, False):
+            raise ValueError("board capability is not hardware-verified: " + required +
+                             " (pass --allow-unverified for bring-up)")
     for dimension in ("width", "height"):
         minimum = app.get("display", {}).get("min_" + dimension, 0)
         if board.get("display", {}).get(dimension, 0) < minimum:
@@ -62,8 +62,8 @@ def resolve_selection(board_id, app_id, root=ROOT):
     return manifest.parent, app_dir
 
 
-def command(action, board_id, app_id, port=None):
-    resolve_selection(board_id, app_id)
+def command(action, board_id, app_id, port=None, allow_unverified=False):
+    resolve_selection(board_id, app_id, allow_unverified=allow_unverified)
     if action not in ("build", "flash", "monitor"):
         raise ValueError("unsupported action: " + action)
     if action in ("flash", "monitor") and not port:
@@ -71,6 +71,8 @@ def command(action, board_id, app_id, port=None):
     cmd = ["idf.py", "-C", str(ROOT / "firmware"),
            "-B", str(ROOT / "firmware/build" / (board_id + "--" + app_id)),
            "-DDADA_BOARD=" + board_id, "-DDADA_APP=" + app_id]
+    if allow_unverified:
+        cmd.append("-DDADA_ALLOW_UNVERIFIED=ON")
     if port:
         cmd += ["-p", port]
     return cmd + [action]
@@ -82,15 +84,20 @@ def main():
     parser.add_argument("--board", default=DEFAULT_BOARD)
     parser.add_argument("--app", default=DEFAULT_APP)
     parser.add_argument("--port")
+    parser.add_argument("--allow-unverified", action="store_true",
+                        help="allow declared but not yet hardware-verified capabilities (local bring-up only)")
     args = parser.parse_args()
     try:
         if args.action == "ports":
             # Pyserial comes with ESP-IDF's Python environment.
             return subprocess.call([sys.executable, "-m", "serial.tools.list_ports", "-v"])
         if args.action == "check":
-            resolve_selection(args.board, args.app)
+            resolve_selection(args.board, args.app, allow_unverified=args.allow_unverified)
             return 0
-        cmd = command(args.action, args.board, args.app, args.port)
+        cmd = command(args.action, args.board, args.app, args.port, args.allow_unverified)
+        if args.allow_unverified:
+            print("warning: this only permits local bring-up; it does not certify hardware",
+                  file=sys.stderr)
         if not shutil.which("idf.py"):
             parser.error("idf.py not found; activate ESP-IDF v5.4.2 with export.sh / export.ps1 first")
         return subprocess.call(cmd)
