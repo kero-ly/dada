@@ -30,19 +30,19 @@ static void test_init_and_bounds(void)
 static void test_pack_round_trip(void)
 {
     paint_t p, restored;
-    assert(paint_init(&p, 48, 56));
-    assert(paint_init(&restored, 48, 56));
+    assert(paint_init(&p, 48, 64));
+    assert(paint_init(&restored, 48, 64));
     paint_set(&p, 0, 0, 1);
-    paint_set(&p, 47, 55, 14);       /* last cell, odd index */
+    paint_set(&p, 47, 63, 14);       /* last cell, odd index */
     paint_set(&p, 5, 6, 15 - 1);
-    assert(paint_cell_count(&p) == 2688);
-    assert(paint_packed_size(&p) == 1344);
+    assert(paint_cell_count(&p) == 3072);
+    assert(paint_packed_size(&p) == 1536);
 
     uint8_t buf[DADA_STORAGE_BLOB_MAX];
     uint32_t wrote = paint_pack(&p, buf, sizeof(buf));
-    assert(wrote == 1344);
+    assert(wrote == 1536);
     assert(paint_unpack(&restored, buf, wrote));
-    for (int i = 0; i < 48 * 56; i++) {
+    for (int i = 0; i < 48 * 64; i++) {
         assert(restored.cells[i] == p.cells[i]);
     }
     /* A wrong length must be refused rather than half-applied. */

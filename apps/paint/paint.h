@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #define PAINT_MAX_COLS 48
-#define PAINT_MAX_ROWS 56
+#define PAINT_MAX_ROWS 64
 #define PAINT_PALETTE_SIZE 16
 
 typedef struct {
