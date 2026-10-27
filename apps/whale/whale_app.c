@@ -1,12 +1,15 @@
 /* A pixel portrait: display + storage.
  *
- * Reads two pre-rendered frames (open / closed) from storage, draws the open
- * one, and swaps to the closed one for a fraction of a second every few
- * seconds. No image data lives in this repository: without stored frames the
- * app shows a placeholder. */
+ * Draws one 160x120 frame of 15 colours, rotated onto a portrait panel so it is
+ * upright when the board is held sideways. The frame comes from storage when
+ * present, otherwise from the built-in copy in frames/, so a fresh clone shows
+ * the artwork without any seeding step. */
 #include "app.h"
 
 #include <stdio.h>
+
+#include "display.h"
+#include "frames/whale-f0.h"
 
 
 /* The artwork is landscape: 64x48 cells of 5 px fills a 320x240 area, which
@@ -126,6 +129,17 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
 
 
     have_frames = load_frame(0, KEY_FRAME0);
+    if (!have_frames && sizeof(WHALE_FRAME) == FRAME_BYTES) {
+        /* Built-in frame: a clone of this repository works without seeding. */
+        for (uint32_t i = 0; i < FRAME_BYTES; i++) {
+            frames[0][i * 2] = (uint8_t)(WHALE_FRAME[i] >> 4);
+            if (i * 2 + 1 < FRAME_CELLS) {
+                frames[0][i * 2 + 1] = (uint8_t)(WHALE_FRAME[i] & 0x0F);
+            }
+        }
+        have_frames = true;
+        printf("whale: using built-in frame\n");
+    }
     if (!have_frames) {
         printf("whale: no stored frames; draw one in paint and re-seed\n");
         draw_placeholder();

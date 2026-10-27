@@ -6,17 +6,22 @@ Chinese: [README.zh-CN.md](README.zh-CN.md).
 Displays one stored 160×120 frame of 15 colours, rotated onto a portrait panel
 so the picture is upright when the board is held sideways.
 
-**No artwork ships with this repository.** The frames are third-party fan art;
-the app therefore reads them from storage and draws a flat placeholder when they
-are absent. This keeps the CI build meaningful and the repository free of images
-it has no right to redistribute.
+One frame ships in `frames/whale-f0.h`, so a fresh clone builds and displays
+without any setup step. See [NOTICE.md](NOTICE.md) for the artwork's provenance
+and licensing: it is third-party fan art and **not** Apache-2.0.
 
 - Frame format: 160×120 cells, 4 bits per cell (9600 bytes), same palette as
   `paint`.
-- Stored under `whale.f0` in the NVS namespace `dada`.
-- To supply your own: draw something in the `paint` app, or generate a packed
-  frame with a script, then write it to `whale.f0` once. A frame whose length does
-  not match the grid is rejected.
+- Resolution order: a frame stored under `whale.f0` in NVS wins; otherwise the
+  built-in frame is used.
+- To use your own image:
+
+  ```sh
+  python tools/image_to_frame.py my-art.png apps/whale/frames/whale-f0.h
+  ```
+
+  That rewrites the built-in frame. A frame whose length does not match the grid
+  is rejected rather than drawn.
 - Rendering walks eight-row stripes (3.8 KB) instead of allocating a full
   240×320 framebuffer (150 KB), because the allocator cannot supply a contiguous
   block of that size once other data is resident.
