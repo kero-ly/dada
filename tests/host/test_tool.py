@@ -14,18 +14,44 @@ BOARD = "jinyichen-esp32-c3-lcd-2.4"
 
 class DeliveryTests(unittest.TestCase):
     def test_build_and_app_isolation(self):
-        first = dada.command("build", BOARD, "touch-counter")
-        second = dada.command("build", BOARD, "bringup")
+        """The ESP-IDF fallback keeps one build directory per board and app."""
+        first = dada.command("build", BOARD, "touch-counter", use_pio=False)
+        second = dada.command("build", BOARD, "bringup", use_pio=False)
         self.assertIn("-DDADA_APP=touch-counter", first)
         self.assertIn("-DDADA_BOARD=" + BOARD, first)
         self.assertNotEqual(first[first.index("-B") + 1], second[second.index("-B") + 1])
         self.assertEqual(first[-1], "build")
 
+    def test_platformio_is_preferred(self):
+        """When pio exists, build/flash/monitor go through the pinned env."""
+        build = dada.command("build", BOARD, "whale", use_pio=True)
+        self.assertEqual(build[:4], ["pio", "run", "-d", build[3]])
+        self.assertEqual(build[build.index("-e") + 1], "dada-c3-whale")
+
+        flash = dada.command("flash", BOARD, "whale", "/dev/cu.example", use_pio=True)
+        self.assertEqual(flash[flash.index("--target") + 1], "upload")
+        self.assertEqual(flash[flash.index("--upload-port") + 1], "/dev/cu.example")
+
+        monitor = dada.command("monitor", BOARD, "whale", "COM3", use_pio=True)
+        self.assertEqual(monitor[0], "pio")
+        self.assertEqual(monitor[monitor.index("--port") + 1], "COM3")
+
+        # Two apps must map to two environments, never the same one.
+        other = dada.command("build", BOARD, "snake", use_pio=True)
+        self.assertNotEqual(build[build.index("-e") + 1], other[other.index("-e") + 1])
+
+    def test_unverified_is_refused_under_platformio(self):
+        """The flag cannot be expressed per environment, so it must not be
+        silently dropped."""
+        with self.assertRaisesRegex(ValueError, "allow-unverified"):
+            dada.command("build", BOARD, "whale", use_pio=True, allow_unverified=True)
+
     def test_flash_requires_explicit_port(self):
         for action in ("flash", "monitor"):
             with self.assertRaisesRegex(ValueError, "port"):
                 dada.command(action, BOARD, "touch-counter")
-        cmd = dada.command("flash", BOARD, "touch-counter", "/dev/cu.example")
+        cmd = dada.command("flash", BOARD, "touch-counter", "/dev/cu.example",
+                           use_pio=False)
         self.assertEqual(cmd[-1], "flash")
         self.assertEqual(cmd[cmd.index("-p") + 1], "/dev/cu.example")
 
@@ -145,7 +171,7 @@ class DeliveryTests(unittest.TestCase):
 
     def test_unverified_flag_reaches_cmake_and_flash(self):
         cmd = dada.command("flash", BOARD, "touch-counter", "/dev/cu.example",
-                           allow_unverified=True)
+                           allow_unverified=True, use_pio=False)
         self.assertIn("-DDADA_ALLOW_UNVERIFIED=ON", cmd)
         self.assertEqual(cmd[-1], "flash")
 

@@ -32,6 +32,16 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Cache PlatformIO packages
+        uses: actions/cache@v4
+        with:
+          # The ESP-IDF framework and both toolchains are ~1.2 GB; rebuilding
+          # them from scratch on every run wastes bandwidth even though it fits
+          # inside the timeout.
+          path: ~/.platformio
+          key: pio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+          restore-keys: |
+            pio-${{ runner.os }}-
       - name: Install PlatformIO Core
         run: python -m pip install -r tools/requirements.txt
       - name: Build selected C3 application with PlatformIO

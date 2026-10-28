@@ -62,12 +62,45 @@ def resolve_selection(board_id, app_id, root=ROOT, allow_unverified=False):
     return manifest.parent, app_dir
 
 
-def command(action, board_id, app_id, port=None, allow_unverified=False):
+def pio_environment(app_id):
+    """PlatformIO environment name for an app (declared in platformio.ini)."""
+    return "dada-c3-" + app_id
+
+
+def command(action, board_id, app_id, port=None, allow_unverified=False,
+            use_pio=None):
+    """Build the command for one action.
+
+    PlatformIO is the documented baseline, so it wins when available; a
+    hand-installed ESP-IDF stays supported as a fallback because the CMake
+    project is still the source of truth. Pass use_pio to pin the choice (the
+    tests do this so they do not depend on what is installed).
+    """
     resolve_selection(board_id, app_id, allow_unverified=allow_unverified)
     if action not in ("build", "flash", "monitor"):
         raise ValueError("unsupported action: " + action)
     if action in ("flash", "monitor") and not port:
         raise ValueError("--port is required; use 'ports' to list devices")
+    if use_pio is None:
+        use_pio = shutil.which("pio") is not None
+
+    if use_pio:
+        if allow_unverified:
+            # platformio.ini pins board and app per environment, so there is no
+            # free-form CMake argument to append. Say so instead of silently
+            # ignoring the flag.
+            raise ValueError(
+                "PlatformIO environments cannot take --allow-unverified; "
+                "add -DDADA_ALLOW_UNVERIFIED=ON to board_build.cmake_extra_args "
+                "in firmware/platformio.ini, or build with ESP-IDF instead")
+        env = pio_environment(app_id)
+        base = ["pio", "run", "-d", str(ROOT / "firmware"), "-e", env]
+        if action == "build":
+            return base
+        if action == "flash":
+            return base + ["--target", "upload", "--upload-port", port]
+        return ["pio", "device", "monitor", "--port", port, "--baud", "115200"]
+
     cmd = ["idf.py", "-C", str(ROOT / "firmware"),
            "-B", str(ROOT / "firmware/build" / (board_id + "--" + app_id)),
            "-DDADA_BOARD=" + board_id, "-DDADA_APP=" + app_id]
