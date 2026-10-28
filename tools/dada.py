@@ -99,7 +99,7 @@ def main():
             print("warning: this only permits local bring-up; it does not certify hardware",
                   file=sys.stderr)
         if not shutil.which("idf.py"):
-            parser.error("idf.py not found; activate ESP-IDF v5.4.2 with export.sh / export.ps1 first")
+            parser.error("idf.py not found; activate a compatible ESP-IDF environment with export.sh / export.ps1 first")
         return subprocess.call(cmd)
     except (ValueError, OSError, KeyError, TypeError) as exc:
         parser.error(str(exc))

@@ -57,7 +57,7 @@ will be evaluated incrementally. Apps may use cloud AI, local services or run en
 
 ## Current progress
 
-- Jinyichen ESP32-C3 + 2.4-inch ST7789 display + CST836U touch; ESP-IDF **v5.4.2**.
+- Jinyichen ESP32-C3 + 2.4-inch ST7789 display + CST836U touch; PlatformIO Core 6.2.0, Espressif32 platform 6.8.1, and ESP-IDF **v5.3.0**.
 - Display, input, monotonic time and storage contracts; NVS storage and manifest-generated board configuration.
 - Four selectable native C apps: `touch-counter` (default), `bringup`, `focus-clock` and `snake`.
 - Experimental single-app lifecycle, injected services, shared app canvas, host tests and local delivery CLI.
@@ -70,7 +70,7 @@ AI connector or second supported board yet. Native C validates the contracts fir
 
 ## Quick start
 
-Activate an installed ESP-IDF v5.4.2 environment first, then from the repository root:
+Install PlatformIO, then from the repository root:
 
 ```sh
 python tools/dada.py check
@@ -78,6 +78,10 @@ python tools/dada.py build
 python tools/dada.py ports
 python tools/dada.py flash --port YOUR_PORT
 python tools/dada.py monitor --port YOUR_PORT
+# PlatformIO is the reproducible firmware baseline:
+pio run -d firmware -e dada-c3-touch-counter
+pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
+pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
 # Hardware diagnostic app, kept in a separate build directory:
 python tools/dada.py build --app bringup
 # First build on a new, still-unverified C3 board:

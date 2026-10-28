@@ -52,7 +52,7 @@ dada 致力于连接应用开发者与硬件生态。
 
 ## 当前进展
 
-- 首板：金逸晨 ESP32-C3 + 2.4 寸 ST7789 屏 + CST836U 触摸，工具链 **ESP-IDF v5.4.2**。
+- 首板：金逸晨 ESP32-C3 + 2.4 寸 ST7789 屏 + CST836U 触摸，工具链为 PlatformIO Core 6.2.0、Espressif32 平台 6.8.1 和 **ESP-IDF v5.3.0**。
 - 已有显示、输入、单调时间、存储契约；提供 NVS 存储及板级清单配置生成。
 - 四个可选择的原生 C 应用：`touch-counter`（默认）、`bringup`、`focus-clock`、`snake`。
 - 已有实验性单应用生命周期、服务注入、应用侧共享画布、主机测试与本地交付 CLI。
@@ -63,7 +63,7 @@ dada 致力于连接应用开发者与硬件生态。
 
 ## 快速开始
 
-先激活已安装的 ESP-IDF v5.4.2 环境，再在仓库根目录执行：
+先安装 PlatformIO，再在仓库根目录执行：
 
 ```sh
 python tools/dada.py check
@@ -71,6 +71,10 @@ python tools/dada.py build
 python tools/dada.py ports
 python tools/dada.py flash --port YOUR_PORT
 python tools/dada.py monitor --port YOUR_PORT
+# PlatformIO 是可复现的固件基线：
+pio run -d firmware -e dada-c3-touch-counter
+pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
+pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
 # 切换到硬件诊断应用，使用独立构建目录：
 python tools/dada.py build --app bringup
 # 新 C3 板尚未验收时，显式构建诊断固件：

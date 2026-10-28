@@ -16,7 +16,7 @@ idf.py -C firmware -DDADA_APP=touch-counter -p YOUR_PORT flash
 可选应用为 `touch-counter`（默认）和 `bringup`，默认板为 `jinyichen-esp32-c3-lcd-2.4`。
 CMake 配置时检查应用需求，未知或不匹配的选择直接失败。
 
-工具链固定 ESP-IDF v5.4.2；当前 C3 配置为已测得的 4MB Flash，单应用分区。
+工具链固定为 PlatformIO Core 6.2.0、Espressif32 6.8.1 管理的 ESP-IDF v5.3.0；当前 C3 配置为已测得的 4MB Flash，单应用分区。
 控制台使用原生 USB Serial/JTAG，显示与触摸已接入；Wi-Fi 和 OTA 尚未启用。
 `sdkconfig` 是本机生成配置，不提交；公共设置写在 `sdkconfig.defaults`。
 它目前仍由同一 C3 集成工程共享，不承诺跨芯片配置隔离。

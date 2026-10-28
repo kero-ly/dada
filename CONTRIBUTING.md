@@ -2,7 +2,7 @@
 
 先从[开发者入口与平台边界](docs/architecture/developer-boundaries.zh-CN.md)选择贡献方向：应用、板卡、配件、平台工具或验证文档。智能体读取 [AGENT.md](AGENT.md)。
 
-1. 先读 README.md 与 docs/development.md，使用 ESP-IDF v5.4.2。
+1. 先读 README.md 与 docs/development.md，使用 PlatformIO Core 6.2.0、Espressif32 6.8.1 + ESP-IDF v5.3.0。
 2. 动手前看一眼 `docs/adr/`：分层边界、板级清单、验证协议、应用形态都已经有决策，避免重复讨论。
 3. 术语以 `docs/glossary.md` 为准（中英对照），新概念先加到术语表再写代码。
 4. 从 main 创建短期分支，例如 `feat/c3-display`、`fix/touch-coordinates`。

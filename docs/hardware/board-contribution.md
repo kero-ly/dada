@@ -34,7 +34,7 @@ a licensed driver component and host tests where practical. Do not put GPIOs in 
 
 ## 3. Build the diagnostic firmware
 
-Install and activate ESP-IDF v5.4.2, then use the explicit board id and USB port:
+Install PlatformIO Core 6.2.0 (with Espressif32 platform 6.8.1, supplying ESP-IDF v5.3.0), then use the explicit board environment and USB port:
 
 ```sh
 python tools/dada.py check --board <vendor>-<board> --app bringup --allow-unverified

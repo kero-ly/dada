@@ -88,7 +88,10 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(dada VERSION 0.1.0)
 
 if(NOT IDF_VERSION_MAJOR EQUAL 5 OR
-   NOT IDF_VERSION_MINOR EQUAL 4 OR
-   NOT IDF_VERSION_PATCH EQUAL 2)
-    message(FATAL_ERROR "Use the repository baseline ESP-IDF v5.4.2.")
+   NOT IDF_VERSION_MINOR EQUAL 3 OR
+   NOT IDF_VERSION_PATCH EQUAL 0)
+    message(WARNING
+        "dada was validated against ESP-IDF v5.3.0 via PlatformIO; "
+        "building with v${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}.${IDF_VERSION_PATCH} "
+        "is an unverified compatibility path.")
 endif()

@@ -7,7 +7,7 @@
 
 ## 当前边界
 
-- 当前只支持金逸晨 ESP32-C3 + 2.4 寸 ST7789 + CST836U 触摸组合，使用 ESP-IDF v5.4.2。S3 清单是规划资料。
+- 当前只支持金逸晨 ESP32-C3 + 2.4 寸 ST7789 + CST836U 触摸组合，使用 PlatformIO Core 6.2.0、Espressif32 6.8.1 + ESP-IDF v5.3.0。S3 清单是规划资料。
 - 当前为静态单板、单应用构建，已有 touch-counter、bringup、focus-clock、snake。
 - 板 + 配件 + 组合是已确认方向。尚无模块/组合解析器、音频契约、完整 optional 能力、网页刷机或自动接线识别。
 - 现在没有新增硬件，不为愿景建立空目录或提前实现通用组合框架。保持现有板包路径；拿到真实模块后先最小适配、验证，再提取复用结构。用户明确提出新任务时据其范围更新设计。
@@ -44,7 +44,7 @@ ctest --test-dir /tmp/dada-host --output-on-failure
 python3 -m unittest discover -s tests/host -p 'test_*.py'
 # 清单变更：在独立环境安装 tools/requirements.txt 后执行
 python tools/validate_manifests.py
-# 固件变更：激活 ESP-IDF v5.4.2，按受影响应用执行
+# 固件变更：使用 PlatformIO Core 6.2.0、Espressif32 6.8.1 + ESP-IDF v5.3.0，按受影响应用执行
 python tools/dada.py check --app touch-counter
 python tools/dada.py build --app touch-counter
 ```

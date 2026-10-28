@@ -2,21 +2,15 @@
 
 ## 工具链
 
-使用 **ESP-IDF v5.4.2** 及配套 Python、RISC-V 工具链。macOS Intel/Apple Silicon 均可；
-Linux/Windows 依照该版本官方指南安装：https://docs.espressif.com/projects/esp-idf/en/v5.4.2/esp32c3/get-started/index.html 。
-SDK 不放入项目仓库；已有其他版本时单独安装，不直接切换团队环境。
+使用 **PlatformIO Core 6.2.0 + Espressif32 6.8.1 + ESP-IDF v5.3.0**。PlatformIO 会锁定框架和工具链版本，SDK 不放入项目仓库。
+macOS Intel/Apple Silicon、Linux 和 Windows 均可使用相同的 `platformio.ini`。
 
-以下仅在目标目录不存在时安装：
+以下是可选的 PlatformIO CLI 安装方式：
 
 ```sh
-mkdir -p ~/esp
-git clone --branch v5.4.2 --recursive https://github.com/espressif/esp-idf.git ~/esp/esp-idf-v5.4.2
-cd ~/esp/esp-idf-v5.4.2
-./install.sh esp32c3
-. ./export.sh
+python -m pip install -r tools/requirements.txt
+pio --version
 ```
-
-每个新终端运行 `. ~/esp/esp-idf-v5.4.2/export.sh`；Windows 使用对应的 ESP-IDF 终端或 `export.ps1`。
 
 ## 克隆与构建
 
@@ -24,12 +18,13 @@ cd ~/esp/esp-idf-v5.4.2
 git clone https://github.com/kero-ly/dada.git
 cd dada
 git switch -c codex/my-change
-idf.py --version
+pio --version
 python tools/dada.py check
-python tools/dada.py build --app touch-counter
+pio run -d firmware -e dada-c3-touch-counter
 ```
 
-版本应为 v5.4.2。构建不需要插板。默认板为 `jinyichen-esp32-c3-lcd-2.4`，当前仅这一块板有实现。
+PlatformIO 应报告 Core 6.2.0，构建输出应报告 Espressif32 6.8.1，固件启动日志应报告 ESP-IDF 5.3.0。构建不需要插板。
+默认板为 `jinyichen-esp32-c3-lcd-2.4`，当前仅这一块板有实现。
 产物在 `firmware/build/<board>--<app>/`。首次构建自动选择清单中的 esp32c3 目标，
 无需先手工运行会重置生成配置的 `set-target`。
 本地 `firmware/sdkconfig` 仍由同一 C3 工程共享，不能据此宣称已经支持跨芯片隔离。
@@ -42,8 +37,8 @@ python tools/dada.py build --app touch-counter
 3. 保留原固件备份（如需恢复商家示例），将下方 `YOUR_PORT` 替换为实际端口。
 
 ```sh
-python tools/dada.py flash --app touch-counter --port YOUR_PORT
-python tools/dada.py monitor --app touch-counter --port YOUR_PORT
+pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
+pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
 ```
 
 烧录会覆盖原程序。用 `Ctrl+]` 退出监视。CLI 不自动挑选端口、不自动安装驱动。
@@ -56,9 +51,8 @@ python tools/dada.py monitor --app touch-counter --port YOUR_PORT
 硬件问题先切换诊断应用：
 
 ```sh
-python tools/dada.py build --app bringup
-python tools/dada.py flash --app bringup --port YOUR_PORT
-python tools/dada.py monitor --app bringup --port YOUR_PORT
+pio run -d firmware -e dada-c3-bringup -t upload --upload-port YOUR_PORT
+pio device monitor -d firmware -e dada-c3-bringup -p YOUR_PORT
 ```
 
 预期屏幕出现 **3×3 网格**，每格中央有编号 1~9；触摸时在触点画出红色方块，
@@ -71,12 +65,12 @@ python tools/dada.py monitor --app bringup --port YOUR_PORT
 （默认 25 分钟，不影响应用代码）：
 
 ```sh
-idf.py -C firmware -DDADA_APP=focus-clock -DDADA_FOCUS_MINUTES=2 build flash
+pio run -d firmware -e dada-c3-focus-clock
 ```
+当前 PlatformIO 环境使用默认 25 分钟；短时验收专用的 CMake 参数环境尚未固化。
 板级参数与历史证据见 `tests/hardware/records/`。
 
-> `DADA_APP` 是 CMake cache 变量。直接用 `idf.py` 构建时它会记住上一次的选择，
-> 需要显式传 `-DDADA_APP=...`；用 `tools/dada.py --app ...` 则每次都会覆盖。
+`DADA_APP` 由 PlatformIO 环境固定传入；每个应用有独立环境和构建目录，避免复用错误的选择。
 
 ## 本地检查
 

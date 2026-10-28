@@ -1,8 +1,8 @@
 # 主机工具
 
 本地交付入口是 `dada.py`，清单检查和配置生成由另外两个脚本完成。
-校验脚本依赖 `jsonschema`；交付 CLI 使用标准库，构建/烧录时需要激活 ESP-IDF v5.4.2，
-端口枚举使用该环境附带的 pyserial。
+校验脚本依赖 `jsonschema`；固件构建和烧录的可复现基线是 PlatformIO Core 6.2.0、Espressif32 6.8.1 + ESP-IDF v5.3.0。
+`tools/dada.py` 仍保留 ESP-IDF `idf.py` 交付适配器，适合已有 IDF 环境的兼容路径；新贡献优先使用 `firmware/platformio.ini`。
 
 ```sh
 pip install -r tools/requirements.txt

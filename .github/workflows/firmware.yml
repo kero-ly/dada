@@ -13,28 +13,33 @@ jobs:
     strategy:
       matrix:
         # Keep in sync with apps/*/app.json; every native app must build here.
-        app: [touch-counter, bringup, focus-clock, snake]
+        include:
+          - app: touch-counter
+            env: dada-c3-touch-counter
+          - app: bringup
+            env: dada-c3-bringup
+          - app: focus-clock
+            env: dada-c3-focus-clock
+          - app: snake
+            env: dada-c3-snake
     runs-on: ubuntu-24.04
-    container: espressif/idf:v5.4.2
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Build selected C3 application
-        shell: bash
+      - name: Install PlatformIO Core
+        run: python -m pip install -r tools/requirements.txt
+      - name: Build selected C3 application with PlatformIO
         run: |
-          . "$IDF_PATH/export.sh"
-          idf.py -C firmware -DDADA_APP=${{ matrix.app }} build
+          pio run -d firmware -e ${{ matrix.env }}
       - name: Save smoke firmware and build configuration
         uses: actions/upload-artifact@v4
         with:
           name: c3-${{ matrix.app }}-${{ github.sha }}
           if-no-files-found: error
           path: |
-            firmware/build/*.bin
-            firmware/build/*.elf
-            firmware/build/*.map
-            firmware/build/bootloader/bootloader.bin
-            firmware/build/partition_table/partition-table.bin
-            firmware/build/flasher_args.json
-            firmware/build/project_description.json
-            firmware/sdkconfig
+            firmware/.pio/build/${{ matrix.env }}/*.bin
+            firmware/.pio/build/${{ matrix.env }}/*.elf
+            firmware/.pio/build/${{ matrix.env }}/*.map
+            firmware/.pio/build/${{ matrix.env }}/bootloader.bin
+            firmware/.pio/build/${{ matrix.env }}/partitions.bin
+            firmware/.pio/build/${{ matrix.env }}/config/sdkconfig.h

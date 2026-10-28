@@ -2,7 +2,7 @@
 
 ## 验证
 
-- [ ] ESP-IDF v5.4.2 编译通过
+- [ ] PlatformIO Core 6.2.0 / Espressif32 6.8.1 / ESP-IDF v5.3.0 编译通过
 - [ ] 涉及硬件时已附实机记录（否则说明未测范围）
 - [ ] 新增或修改板卡清单时，清单符合 ADR 0002 的 schema（未知值保持 null）
 - [ ] 新增板卡附有 `tests/hardware/records/` 实机记录，且 `verified_capabilities` 仅包含通过项

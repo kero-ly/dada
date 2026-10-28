@@ -28,7 +28,7 @@ English: [board-contribution.md](board-contribution.md).
 
 ## 3. 构建诊断固件
 
-安装并激活 ESP-IDF v5.4.2，使用明确的板卡 id 和串口：
+安装 PlatformIO Core 6.2.0（Espressif32 平台 6.8.1，由它提供 ESP-IDF v5.3.0），使用明确的板卡环境和串口：
 
 ```sh
 python tools/dada.py check --board <vendor>-<board> --app bringup --allow-unverified

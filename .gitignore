@@ -1,6 +1,9 @@
 .DS_Store
 **/build/
+**/.pio/
 **/sdkconfig
+**/sdkconfig.*
+!**/sdkconfig.defaults
 **/sdkconfig.old
 **/managed_components/
 .venv/

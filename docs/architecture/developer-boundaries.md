@@ -6,7 +6,7 @@ This page separates implemented functionality from the agreed direction for dada
 
 ## Choose a contribution
 
-Only the Jinyichen ESP32-C3 with its 2.4-inch display and touch panel is currently supported. The S3 manifest records planned hardware, not an implemented target. Builds use ESP-IDF v5.4.2 and select one board and one native C app.
+Only the Jinyichen ESP32-C3 with its 2.4-inch display and touch panel is currently supported. The S3 manifest records planned hardware, not an implemented target. Builds use PlatformIO Core 6.2.0 with Espressif32 6.8.1 and ESP-IDF v5.3.0, selecting one board and one native C app.
 
 | Goal | Start here | Deliverable and evidence |
 | --- | --- | --- |
