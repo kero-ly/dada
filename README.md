@@ -59,7 +59,9 @@ will be evaluated incrementally. Apps may use cloud AI, local services or run en
 
 - Jinyichen ESP32-C3 + 2.4-inch ST7789 display + CST836U touch; PlatformIO Core 6.2.0, Espressif32 platform 6.8.1, and ESP-IDF **v5.3.0**.
 - Display, input, monotonic time and storage contracts; NVS storage and manifest-generated board configuration.
-- Four selectable native C apps: `touch-counter` (default), `bringup`, `focus-clock` and `snake`.
+- Seven selectable native C apps, all built only on the capability contracts:
+  `touch-counter` (default), `bringup`, `focus-clock`, `snake`, `paint`,
+  `whale` and `flappy`. See `apps/` for what each one needs and does.
 - Experimental single-app lifecycle, injected services, shared app canvas, host tests and local delivery CLI.
 - Display, touch, counter, pomodoro and Snake behaviours have board-specific acceptance records;
   see [hardware records](tests/hardware/records/).

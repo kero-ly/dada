@@ -1,0 +1,6 @@
+{
+  "id": "paint",
+  "format": "native-c-v1",
+  "requires": ["display", "input", "storage"],
+  "display": {"min_width": 160, "min_height": 200}
+}

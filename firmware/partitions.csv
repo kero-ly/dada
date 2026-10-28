@@ -1,0 +1,6 @@
+# Enlarged NVS so a full-resolution portrait frame fits as a single blob.
+# Current: 2px grid = 160x120 cells = 9600 bytes per frame.
+# name,     type, subtype, offset,   size
+nvs,        data, nvs,     0x9000,   0x10000
+phy_init,   data, phy,     0x19000,  0x1000
+factory,    app,  factory, 0x20000,  0x1E0000

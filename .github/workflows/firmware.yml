@@ -22,6 +22,12 @@ jobs:
             env: dada-c3-focus-clock
           - app: snake
             env: dada-c3-snake
+          - app: paint
+            env: dada-c3-paint
+          - app: whale
+            env: dada-c3-whale
+          - app: flappy
+            env: dada-c3-flappy
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

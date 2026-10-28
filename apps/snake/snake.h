@@ -35,7 +35,10 @@ typedef struct {
     uint32_t step_ms;
     uint64_t last_step_ms;
     uint32_t rng;
-    bool turn_locked;
+    /* Queued turns, applied one per step. Two slots cover the fastest realistic
+     * swipe sequence without letting a player reverse into the neck. */
+    snake_dir_t turn_queue[2];
+    int turn_count;
 } snake_t;
 
 /** Allocate the body; w and h are grid cells. Returns DADA_OK on success. */
@@ -45,7 +48,15 @@ void snake_free(snake_t *s);
 /** Begin a new round: length 3 in the middle, score cleared, food placed. */
 void snake_start(snake_t *s, uint64_t now_ms);
 
-/** Request a direction change; reversing into yourself is ignored. */
+/**
+ * Request a direction change.
+ *
+ * The request is queued and applied on the next step, so a fast swipe sequence
+ * ("up then left") is honoured over two steps instead of being dropped.
+ *
+ * @return true when the turn was queued, false when it was impossible
+ *         (reversal into the neck, duplicate direction, or a full queue)
+ */
 bool snake_turn(snake_t *s, snake_dir_t dir);
 
 /**

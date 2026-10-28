@@ -49,11 +49,55 @@ static void test_turn_rejects_reversal(void)
     assert(!snake_turn(&s, SNAKE_LEFT));       /* would reverse */
     assert(s.dir == SNAKE_RIGHT);
     assert(snake_turn(&s, SNAKE_UP));
+    /* Turns are queued: the heading only changes when the next step runs. */
+    assert(s.dir == SNAKE_RIGHT);
+    snake_free(&s);
+}
+
+static void test_turn_is_applied_on_the_next_step(void)
+{
+    snake_t s = make(12, 14);
+    snake_start(&s, 0);
+    assert(snake_turn(&s, SNAKE_UP));
+    snake_tick(&s, s.last_step_ms + s.step_ms);
     assert(s.dir == SNAKE_UP);
-    assert(!snake_turn(&s, SNAKE_LEFT));       /* two quick swipes cannot reverse */
+    snake_free(&s);
+}
+
+static void test_two_quick_turns_are_both_honoured(void)
+{
+    /* Moving right, a fast "up, left" swipe: both turns must land, one per step,
+     * instead of the second one being dropped. */
+    snake_t s = make(12, 14);
+    snake_start(&s, 0);
+    assert(snake_turn(&s, SNAKE_UP));
+    assert(snake_turn(&s, SNAKE_LEFT));
+
+    snake_tick(&s, s.last_step_ms + s.step_ms);
     assert(s.dir == SNAKE_UP);
-    assert(snake_tick(&s, s.last_step_ms + s.step_ms));
-    assert(snake_turn(&s, SNAKE_LEFT));        /* next movement interval accepts a turn */
+    snake_tick(&s, s.last_step_ms + s.step_ms);
+    assert(s.dir == SNAKE_LEFT);
+    assert(s.state == SNAKE_RUNNING);
+    snake_free(&s);
+}
+
+static void test_turn_queue_drops_extras(void)
+{
+    snake_t s = make(12, 14);
+    snake_start(&s, 0);
+    assert(snake_turn(&s, SNAKE_UP));
+    assert(snake_turn(&s, SNAKE_LEFT));
+    assert(!snake_turn(&s, SNAKE_DOWN));   /* queue holds two */
+    snake_free(&s);
+}
+
+static void test_queued_turn_cannot_fold_the_neck(void)
+{
+    /* "up then down" would reverse relative to the queued heading. */
+    snake_t s = make(12, 14);
+    snake_start(&s, 0);
+    assert(snake_turn(&s, SNAKE_UP));
+    assert(!snake_turn(&s, SNAKE_DOWN));
     snake_free(&s);
 }
 
@@ -145,6 +189,10 @@ int main(void)
     test_init_and_start();
     test_tick_respects_interval();
     test_turn_rejects_reversal();
+    test_turn_is_applied_on_the_next_step();
+    test_two_quick_turns_are_both_honoured();
+    test_turn_queue_drops_extras();
+    test_queued_turn_cannot_fold_the_neck();
     test_eating_grows_and_scores();
     test_wall_collision_ends_game();
     test_self_collision_ends_game();

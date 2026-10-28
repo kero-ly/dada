@@ -1,0 +1,6 @@
+{
+  "id": "flappy",
+  "format": "native-c-v1",
+  "requires": ["display", "input", "time"],
+  "display": {"min_width": 200, "min_height": 260}
+}
