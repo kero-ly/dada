@@ -9,7 +9,7 @@
 
 ## 结果
 
-四个环境均完成构建；每次上传均通过 esptool 的写入和 hash 校验，并通过复位后的串口日志确认启动：
+七个环境均完成构建；每次上传均通过 esptool 的写入和 hash 校验，并通过复位后的串口日志确认启动：
 
 | 应用 | PlatformIO 环境 | 结果 | 启动日志 |
 | --- | --- | --- | --- |
@@ -17,10 +17,13 @@
 | `touch-counter` | `dada-c3-touch-counter` | pass | `touch-counter started (240x320)` |
 | `focus-clock` | `dada-c3-focus-clock` | pass | `focus-clock started (240x320)`，`focus: ready 25:00, tap to start` |
 | `snake` | `dada-c3-snake` | pass | `snake started (240x320)`，`snake: ready (12x14 cells), tap to start` |
+| `paint` | `dada-c3-paint` | pass | `paint started (240x320)`，`paint: 48x64 cells at 5px, 1536 bytes when saved` |
+| `whale` | `dada-c3-whale` | pass | `whale started (240x320)`，`whale: using built-in frame`，`whale: 160x120 cells at 2px` |
+| `flappy` | `dada-c3-flappy` | pass | `flappy started (240x320)`，`flappy: ready (240x320), best 0` |
 
 每次启动日志还确认了 `ST7789 240x320 ready`、`CST836U at 0x15` 和 `ESP-IDF: 5.3.0`。
 
 ## 范围与未测项
 
-这次验证证明 PlatformIO 基线可以在当前这块 C3 板上构建、烧录并启动四个现有应用；PlatformIO 的通用 `esp32-c3-devkitm-1` 定义没有替代 `hardware/jinyichen/esp32-c3-lcd-2.4/board.json` 的硬件事实。
-屏幕画面、触摸坐标和各应用交互仍需使用者在设备前逐项肉眼确认；尚未验证第二块板、外接配件、组合冲突检查或网页刷机。
+这次验证证明 PlatformIO 基线可以在当前这块 C3 板上构建、烧录并启动七个现有应用；PlatformIO 的通用 `esp32-c3-devkitm-1` 定义没有替代 `hardware/jinyichen/esp32-c3-lcd-2.4/board.json` 的硬件事实。
+串口启动、显示驱动和触摸控制器初始化已确认；各应用的画面内容和点击/拖动交互仍需使用者在设备前逐项肉眼确认。尚未验证第二块板、外接配件、组合冲突检查或网页刷机。
