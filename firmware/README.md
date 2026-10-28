@@ -4,7 +4,7 @@
 每 20ms 调用一次 step；应用返回错误后 stop 并释放板级资源。
 业务和界面放在 `apps/`，引脚和屏幕参数放在板级绑定与驱动。
 
-推荐在仓库根目录使用 `python tools/dada.py build --app touch-counter`。
+推荐在仓库根目录使用 PlatformIO 环境构建：`pio run -d firmware -e dada-c3-touch-counter`。
 需要直接调用 IDF 时：
 
 ```sh
@@ -12,7 +12,7 @@ idf.py -C firmware -DDADA_APP=touch-counter build
 idf.py -C firmware -DDADA_APP=touch-counter -p YOUR_PORT flash
 ```
 
-直接调用的默认构建目录为 `firmware/build/`；CLI 为每个板卡/应用使用独立子目录。
+PlatformIO 为每个应用环境使用独立的 `firmware/.pio/build/<environment>/` 目录。
 可选应用为 `touch-counter`（默认）和 `bringup`，默认板为 `jinyichen-esp32-c3-lcd-2.4`。
 CMake 配置时检查应用需求，未知或不匹配的选择直接失败。
 

@@ -76,15 +76,13 @@ Install PlatformIO, then from the repository root:
 
 ```sh
 python tools/dada.py check
-python tools/dada.py build
 python tools/dada.py ports
-python tools/dada.py flash --port YOUR_PORT
-python tools/dada.py monitor --port YOUR_PORT
 # PlatformIO is the reproducible firmware baseline:
 pio run -d firmware -e dada-c3-touch-counter
 pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
 pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
 # Hardware diagnostic app, kept in a separate build directory:
+# The legacy dada.py adapter remains available for an activated ESP-IDF environment.
 python tools/dada.py build --app bringup
 # First build on a new, still-unverified C3 board:
 python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverified
@@ -122,7 +120,7 @@ python3 -m unittest discover -s tests/host -p 'test_*.py'
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [ADRs](docs/adr/README.md) and
-[host tools](tools/README.md). CI builds all four apps and runs host/manifest checks.
+[host tools](tools/README.md). CI builds all seven apps and runs host/manifest checks.
 Vendor sample packages without a suitable license must not be uploaded or copied into apps.
 `dada verify` is planned, not implemented.
 

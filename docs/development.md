@@ -8,9 +8,14 @@ macOS Intel/Apple Silicon、Linux 和 Windows 均可使用相同的 `platformio.
 以下是可选的 PlatformIO CLI 安装方式：
 
 ```sh
+python3 -m venv .venv
+. .venv/bin/activate                 # Windows: .venv\\Scripts\\activate
 python -m pip install -r tools/requirements.txt
 pio --version
 ```
+
+依赖安装在仓库自己的 `.venv` 中，不需要把 PlatformIO 或 ESP-IDF 放进仓库。
+PlatformIO 的下载缓存默认位于用户目录 `~/.platformio`，其中包含 Espressif32 平台、ESP-IDF 5.3.0 和编译工具链。
 
 ## 克隆与构建
 
@@ -25,9 +30,8 @@ pio run -d firmware -e dada-c3-touch-counter
 
 PlatformIO 应报告 Core 6.2.0，构建输出应报告 Espressif32 6.8.1，固件启动日志应报告 ESP-IDF 5.3.0。构建不需要插板。
 默认板为 `jinyichen-esp32-c3-lcd-2.4`，当前仅这一块板有实现。
-产物在 `firmware/build/<board>--<app>/`。首次构建自动选择清单中的 esp32c3 目标，
-无需先手工运行会重置生成配置的 `set-target`。
-本地 `firmware/sdkconfig` 仍由同一 C3 工程共享，不能据此宣称已经支持跨芯片隔离。
+产物在 `firmware/.pio/build/<environment>/`。PlatformIO 会按环境生成独立的构建目录和 `sdkconfig`，
+避免不同应用复用错误的配置；这仍不代表已经完成跨芯片配置隔离。
 
 ## 连接、烧录与日志
 
@@ -87,8 +91,8 @@ python tools/gen_board_config.py --all -o /tmp/dada-board-config
 主机测试不需要 ESP-IDF，但需要一个本机 C 编译器（Windows 上装 MinGW-w64 或 LLVM，
 macOS 用 Xcode 命令行工具，Linux 用 gcc）；构建目录随意，`/tmp` 只是示例。
 
-主机测试不需要 ESP-IDF。清单校验需要 `jsonschema`；构建、烧录、端口枚举使用激活后的 IDF 环境。
-CI 分别编译两个应用，运行主机和板级清单检查；实机显示/触摸/冷启动另附验证记录。
+主机测试不需要 ESP-IDF。清单校验需要 `jsonschema`；构建、烧录、端口枚举由 PlatformIO 管理。
+CI 编译七个应用，运行主机及板级清单检查；实机显示/触摸/冷启动另附验证记录。
 不要提交 `sdkconfig`、构建产物、密钥或无合适许可证的商家源码。
 
 ## 协作边界

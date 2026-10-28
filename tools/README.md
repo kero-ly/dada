@@ -26,7 +26,7 @@ python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverifie
 不自动下载 SDK 或选择串口。正常模式要求所需能力已声明并经过硬件验证。
 新板本地诊断时可显式使用 `--allow-unverified`：只能使用清单已声明的硬件能力，
 CLI 和 CMake 都会携带该 opt-in；它不授予支持状态或绕过编译检查。
-各选择的构建产物放在 `firmware/build/<board>--<app>/`。
+PlatformIO 选择的构建产物放在 `firmware/.pio/build/<environment>/`。
 `sdkconfig` 仍由当前 C3 集成工程共享；完整资源匹配和跨芯片配置隔离尚未实现。
 `check --allow-unverified` 检查声明是否足以构建 bring-up，不等同于实机认证，也不替代完整板级 Schema 检查。
 

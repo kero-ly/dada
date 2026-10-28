@@ -68,15 +68,13 @@ dada 致力于连接应用开发者与硬件生态。
 
 ```sh
 python tools/dada.py check
-python tools/dada.py build
 python tools/dada.py ports
-python tools/dada.py flash --port YOUR_PORT
-python tools/dada.py monitor --port YOUR_PORT
 # PlatformIO 是可复现的固件基线：
 pio run -d firmware -e dada-c3-touch-counter
 pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
 pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
 # 切换到硬件诊断应用，使用独立构建目录：
+# 兼容已有 ESP-IDF 环境时仍可使用旧的 dada.py 适配器：
 python tools/dada.py build --app bringup
 # 新 C3 板尚未验收时，显式构建诊断固件：
 python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverified
@@ -112,7 +110,7 @@ python3 -m unittest discover -s tests/host -p 'test_*.py'
 ```
 
 见 [CONTRIBUTING.md](CONTRIBUTING.md)、[架构决策](docs/adr/README.md)与[主机工具](tools/README.md)。
-CI 编译四个应用并运行主机及清单检查；实机验收按板卡和能力查看硬件记录。
+CI 编译七个应用并运行主机及清单检查；实机验收按板卡和能力查看硬件记录。
 不上传或复制没有合适许可证的商家示例；`dada verify` 尚未实现。
 
 代码、提交信息用英文，文档逐步提供中英版本。
