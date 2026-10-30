@@ -64,24 +64,24 @@ dada 致力于连接应用开发者与硬件生态。
 
 ## 快速开始
 
-先安装 PlatformIO，再在仓库根目录执行：
+PlatformIO 是基线。先装好它（见[开发指南](docs/development.md)；首次构建还会下载约 1.9 GB 工具链）。
 
 ```sh
-python tools/dada.py check
-python tools/dada.py ports
-# PlatformIO 是可复现的固件基线：
-pio run -d firmware -e dada-c3-touch-counter
-pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
-pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
-# 切换到硬件诊断应用，使用独立构建目录：
-# 兼容已有 ESP-IDF 环境时仍可使用旧的 dada.py 适配器：
-python tools/dada.py build --app bringup
-# 新 C3 板尚未验收时，显式构建诊断固件：
-python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverified
+pio run -d firmware -e dada-c3-touch-counter                              # 构建
+pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port COM3  # 烧录
+pio device monitor -p COM3 -b 115200                                      # 看日志
 ```
 
+这就是完整闭环，其余都是可选项：
+
+- **换一个应用**：每个应用都有自己的环境，例如硬件诊断用 `-e dada-c3-bringup`。
+  全部应用见 [apps/](apps/README.zh-CN.md)。
+- **构建前先检查**：`python tools/dada.py check --app snake` 会在板子无法提供
+  该应用声明的能力时提前失败。
+- **已经有 ESP-IDF 环境**：`python tools/dada.py build --app snake` 改为驱动 `idf.py`。
+  保留这条路是因为 CMake 工程才是事实来源，PlatformIO 只是驱动它。
+
 烧录会替换原固件，需要恢复时请保留备份。
-环境安装见[开发指南](docs/development.md)，交互说明见[计数器说明](apps/touch-counter/README.zh-CN.md)。
 接入 ESP32-C3 新板见[板卡贡献指南](docs/hardware/board-contribution.zh-CN.md)。
 
 ## 从首板到平台

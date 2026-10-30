@@ -72,25 +72,26 @@ AI connector or second supported board yet. Native C validates the contracts fir
 
 ## Quick start
 
-Install PlatformIO, then from the repository root:
+PlatformIO is the baseline. Install it first ([development guide](docs/development.md);
+the first build also downloads ~1.9 GB of toolchain).
 
 ```sh
-python tools/dada.py check
-python tools/dada.py ports
-# PlatformIO is the reproducible firmware baseline:
-pio run -d firmware -e dada-c3-touch-counter
-pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
-pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
-# Hardware diagnostic app, kept in a separate build directory:
-# The legacy dada.py adapter remains available for an activated ESP-IDF environment.
-python tools/dada.py build --app bringup
-# First build on a new, still-unverified C3 board:
-python tools/dada.py build --board YOUR_BOARD_ID --app bringup --allow-unverified
+pio run -d firmware -e dada-c3-touch-counter                              # build
+pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port COM3  # flash
+pio device monitor -p COM3 -b 115200                                      # logs
 ```
 
-Flashing replaces the existing firmware. Keep its backup if you need to restore it.
-Detailed setup: [development guide](docs/development.md).
-Counter behaviour: [app guide](apps/touch-counter/README.md).
+That is the whole loop. Everything else is optional:
+
+- **Another app.** Every app in [apps/](apps/README.md) has its own environment,
+  e.g. `-e dada-c3-bringup` for the hardware diagnostic.
+- **Check before building.** `python tools/dada.py check --app snake` fails early
+  when the selected board cannot supply what the app declares it needs.
+- **Already have ESP-IDF?** `python tools/dada.py build --app snake` drives
+  `idf.py` instead. This path is kept as a fallback because the CMake project is
+  the source of truth — PlatformIO only drives it.
+
+Flashing replaces the existing firmware. Keep a backup if you may need to restore it.
 Adding an ESP32-C3 board: [board contribution guide](docs/hardware/board-contribution.md).
 
 ## From one board to a platform

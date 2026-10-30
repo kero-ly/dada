@@ -62,6 +62,27 @@ pio run -d firmware -e dada-c3-touch-counter
 写进 pip 配置文件（`~/.pip/pip.conf` 或 `%APPDATA%\pip\pip.ini`）可永久生效。
 工具链本身从 PlatformIO 的 CDN 取，不需要另外配镜像。
 
+### 如果装过旧版本的 PlatformIO
+
+从 Arduino 项目或旧的 espressif32 平台用过来时，`~/.platformio` 里可能留着别的版本
+（例如 `espressif32@6.5.0`、`toolchain-riscv32-esp@8.4.0`）。此时 `pio run` 会去装新版本，
+却可能因为磁盘上的旧包报 `PackageException`，或者在下载中途反复失败，**报错看起来像
+构建坏了，其实是版本对不上**。
+
+先看装了什么，再删掉仓库用不到的：
+
+```sh
+pio pkg list --global
+
+rm -rf ~/.platformio/packages/framework-arduinoespressif32  # 本仓库用 ESP-IDF，不用 Arduino
+rm -rf ~/.platformio/packages/toolchain-xtensa-esp32         # Xtensa 是 ESP32 的，C3 是 RISC-V
+rm -rf ~/.platformio/packages/toolchain-riscv32-esp          # 删掉后下次构建会装正确的 13.2.0
+rm -rf ~/.platformio/platforms/espressif32@6.5.0
+```
+
+Windows 上对应 `%USERPROFILE%\.platformio\packages\`。删完再 `pio run`，
+PlatformIO 会按 `platformio.ini` 重新拉匹配的版本。
+
 ### 磁盘占用
 
 每个应用一个环境，各自有 `firmware/.pio/build/<environment>/`，约 **170 MB**。
