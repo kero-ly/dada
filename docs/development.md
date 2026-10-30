@@ -98,7 +98,7 @@ PlatformIO 会按 `platformio.ini` 重新拉匹配的版本。
 
 ```sh
 pio run -d firmware -e dada-c3-touch-counter -t upload --upload-port YOUR_PORT
-pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
+pio device monitor -p YOUR_PORT -b 115200
 ```
 
 烧录会覆盖原程序。用 `Ctrl+]` 退出监视。CLI 不自动挑选端口、不自动安装驱动。
@@ -112,14 +112,14 @@ pio device monitor -d firmware -e dada-c3-touch-counter -p YOUR_PORT
 
 ```sh
 pio run -d firmware -e dada-c3-bringup -t upload --upload-port YOUR_PORT
-pio device monitor -d firmware -e dada-c3-bringup -p YOUR_PORT
+pio device monitor -p YOUR_PORT -b 115200
 ```
 
 预期屏幕出现 **3×3 网格**，每格中央有编号 1~9；触摸时在触点画出红色方块，
 串口打印 `bringup: tap (x, y) -> cell N (row r col c)`。
 这样可以逐条核对触摸坐标与屏幕位置是否对应，而不是只看"有没有坐标"。
 
-验收后用 `--app touch-counter` 切回。
+验收后重新烧回 `-e dada-c3-touch-counter`。
 
 想把番茄钟一轮缩短到 2 分钟做端到端验证，直接传 CMake 变量
 （默认 25 分钟，不影响应用代码）：
@@ -154,7 +154,7 @@ CI 编译七个应用，运行主机及板级清单检查；实机显示/触摸/
 ## 协作边界
 
 - 应用成员改 `apps/`，仅使用契约；硬件成员改 `hardware/` 与 `components/`；
-  修改公共契约需要同时检查两个应用和主机测试。
+  修改公共契约需要同时检查全部应用和主机测试（`ctest` 会编译其中依赖逻辑的那几个）。
 - 以短期分支和 PR 协作。推送后查看实际 Actions 结果，本地通过不代表远端 CI 已通过。
 - 需求、实现和待验收项目分开记录；现阶段 `dada verify` 尚未实现。
 - 后续提取服务与第二块板的验收门槛见[增量架构路线](architecture/incremental-roadmap.zh-CN.md)。
