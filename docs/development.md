@@ -33,6 +33,41 @@ PlatformIO 应报告 Core 6.2.0，构建输出应报告 Espressif32 6.8.1，固�
 产物在 `firmware/.pio/build/<environment>/`。PlatformIO 会按环境生成独立的构建目录和 `sdkconfig`，
 避免不同应用复用错误的配置；这仍不代表已经完成跨芯片配置隔离。
 
+## 首次构建为什么久、占多大
+
+第一次 `pio run` 会下载 Espressif32 平台、ESP-IDF 5.3.0 和 RISC-V 工具链，
+解压后约 **1.9 GB**（缓存在 `~/.platformio`，之后复用）。同时 PlatformIO 会为 ESP-IDF
+单独建一个 Python 虚拟环境（`~/.platformio/penv/.espidf-5.3.0`）并安装它的依赖。
+
+实测（Windows，代理网络）：
+
+| 操作 | 首次 | 之后 |
+| --- | --- | --- |
+| 全量构建 | 2 分 28 秒 | — |
+| 无改动增量构建 | — | 4.2 秒 |
+| 烧录 | 6.5 秒 | 6.5 秒 |
+
+编译本身不比手装 ESP-IDF 慢；时间花在首次下载和装依赖上。
+
+### 国内网络：给 pip 配镜像
+
+卡在 "Installing ESP-IDF python dependencies" 或 `penv` 里反复 pip，通常是直连 PyPI 太慢。
+临时用镜像：
+
+```sh
+export PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/   # Windows PowerShell: $env:PIP_INDEX_URL="..."
+pio run -d firmware -e dada-c3-touch-counter
+```
+
+写进 pip 配置文件（`~/.pip/pip.conf` 或 `%APPDATA%\pip\pip.ini`）可永久生效。
+工具链本身从 PlatformIO 的 CDN 取，不需要另外配镜像。
+
+### 磁盘占用
+
+每个应用一个环境，各自有 `firmware/.pio/build/<environment>/`，约 **170 MB**。
+七个应用全建约 **1.2 GB**。这是 PlatformIO 相对共享构建目录的代价；不用全部构建，
+或用 `pio run -d firmware -e <environment> -t clean` 清掉不用的。
+
 ## 连接、烧录与日志
 
 1. 使用支持数据传输的 USB 线连接开发板。当前首板使用原生 USB Serial/JTAG。
