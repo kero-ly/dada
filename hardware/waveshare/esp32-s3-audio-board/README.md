@@ -10,21 +10,19 @@ Chinese: [README.zh-CN.md](README.zh-CN.md).
 `whale` and `pet` display correctly from the stock bootloader. The same app
 source that runs on the C3 board runs here unchanged.
 
-## Deployment: flash the app only
+## Deployment
 
-**Do not flash this board's bootloader.** A build using the default
-`esp32-s3-devkitc-1` bootloader does not start on this hardware, and the cause is
-not yet identified. The stock bootloader works, so keep it:
+Standard PlatformIO flow:
 
 ```sh
-pio run -d firmware -e dada-s3-pet
-esptool --chip esp32s3 -p COM4 -b 921600 \
-    write_flash 0x20000 .pio/build/dada-s3-pet/firmware.bin
+pio run -d firmware -e dada-s3-pet -t upload --upload-port COM4
 ```
 
-This puts the app at `0x20000`, which is where the stock partition table expects
-`ota_0`. It also means `pio run -t upload` must not be used - that path rewrites
-the bootloader too.
+One requirement: `firmware/platformio.ini` must pin `board_build.partitions =
+partitions.csv`. Without it PlatformIO flashes the app at its own default offset
+(`0x10000`) while the partition table declares `0x20000`, and the image never
+starts. That mismatch looks exactly like a broken bootloader, which cost an
+evening of chasing the wrong suspect.
 
 To go back to the factory firmware, keep a full 16 MB dump of the board before
 touching it and restore with `write_flash 0x0 backup.bin`.
@@ -49,5 +47,10 @@ driven yet; RST is wired to GPIO6 instead so the driver can do a hardware reset.
 
 - **Touch**: the module has no touch controller, so `input` is absent and
   input-driven apps are refused by the capability check.
-- **Serial log**: the app runs but nothing appears on the USB port. Unresolved.
 - Audio and networking are outside the current contract set.
+
+## Note on serial output
+
+The app prints at startup only, so a monitor attached later sees nothing. `pet`
+prints a heartbeat every five seconds to make "alive" distinguishable from
+"hung". Add the same to any long-running app before concluding it crashed.

@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+#include "esp_system.h"
+
 #include "display.h"
 #include "pet.h"
 #include "portrait/frame.h"
@@ -30,6 +32,7 @@ static uint16_t stripe[STRIPE_COLS * 320];
 static bool have_frame;
 static bool was_pressed;
 static uint64_t last_tick_ms;
+static uint64_t last_beat_ms;
 static int drawn_x;
 static int drawn_y;
 static int drawn_breath;
@@ -134,6 +137,7 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
     uint64_t now = services.time->monotonic_ms(services.time->ctx);
     pet_init(&pet, now, 0x9E77u);
     last_tick_ms = now;
+    last_beat_ms = now;
     was_pressed = false;
 
     drawn_x = 0;
@@ -169,6 +173,16 @@ dada_err_t dada_app_step(void)
 
     bool moved = pet_tick(&pet, now);
     int breath = pet_breath(now);
+
+    /* Heartbeat: without a debugger the only way to tell the app is alive is
+     * for it to keep saying so. */
+    if (now - last_beat_ms >= 5000) {
+        last_beat_ms = now;
+        printf("pet: alive %llus breath=%d off=(%d,%d) heap=%u\n",
+               (unsigned long long)(now / 1000), breath,
+               pet.offset_x, pet.offset_y,
+               (unsigned)esp_get_free_heap_size());
+    }
     int want_x = pet.offset_x;
     int want_y = pet.offset_y;
 

@@ -9,19 +9,18 @@ English: [README.md](README.md)。
 `whale` 和 `pet` 在原厂 bootloader 下能正常显示。同一份应用源码在 C3 板上跑，
 在这里不改一行也能跑。
 
-## 部署：只烧 app
+## 部署
 
-**不要烧这块板的 bootloader。** 用默认 `esp32-s3-devkitm-1` bootloader 编译出来的
-固件在这块硬件上起不来，原因尚未定位。原厂 bootloader 是好的，保留它：
+标准 PlatformIO 流程：
 
 ```sh
-pio run -d firmware -e dada-s3-pet
-esptool --chip esp32s3 -p COM4 -b 921600 \
-    write_flash 0x20000 .pio/build/dada-s3-pet/firmware.bin
+pio run -d firmware -e dada-s3-pet -t upload --upload-port COM4
 ```
 
-这样把 app 放到 `0x20000`，正好是原厂分区表里 `ota_0` 的位置。也因此
-**不能用 `pio run -t upload`**——那条路会把 bootloader 一起重写。
+有一个前提：`firmware/platformio.ini` 必须显式写 `board_build.partitions =
+partitions.csv`。不写的话 PlatformIO 会把 app 烧到它自己的默认偏移（`0x10000`），
+而分区表声明的是 `0x20000`，镜像永远起不来。这个错位看起来**非常像 bootloader 坏了**，
+我为此追错方向追了一晚上。
 
 想恢复出厂固件，动手前先留一份完整 16 MB 备份，用 `write_flash 0x0 backup.bin` 还原。
 
@@ -44,5 +43,9 @@ esptool --chip esp32s3 -p COM4 -b 921600 \
 ## 不可用
 
 - **触摸**：这块屏没有触控 IC，`input` 能力缺失，需要输入的应用会被能力检查拒绝。
-- **串口日志**：app 在跑，但 USB 口没有任何输出。未定位。
 - 音频与网络不在当前契约范围内。
+
+## 关于串口输出
+
+app 只在启动时打印，之后才连上的监视器什么都看不到。`pet` 每 5 秒打印一次心跳，
+让"活着"和"卡死"可以区分。在断定某个应用崩溃之前，先给它加上同样的心跳。
