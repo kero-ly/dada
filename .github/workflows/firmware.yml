@@ -28,6 +28,8 @@ jobs:
             env: dada-c3-whale
           - app: flappy
             env: dada-c3-flappy
+          - app: pet
+            env: dada-c3-pet
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

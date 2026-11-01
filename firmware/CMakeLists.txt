@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.16)
 set(DADA_BOARD "jinyichen-esp32-c3-lcd-2.4" CACHE STRING "Board manifest id")
 set(DADA_APP "touch-counter" CACHE STRING "Native app id")
 option(DADA_ALLOW_UNVERIFIED "Allow local bring-up against declared, unverified capabilities" OFF)
-set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup focus-clock snake paint whale flappy)
+set_property(CACHE DADA_APP PROPERTY STRINGS touch-counter bringup focus-clock snake paint whale flappy pet)
 # Pomodoro length, in minutes. Defaults to the real 25; override for a quick
 # end-to-end run: idf.py -DDADA_FOCUS_MINUTES=2 build
 set(DADA_FOCUS_MINUTES 25 CACHE STRING "focus-clock session length in minutes")
@@ -69,10 +69,20 @@ endif()
 message(STATUS "dada: board=${DADA_BOARD} header=${DADA_BOARD_CONFIG_DIR}/dada_board_config.h")
 
 # Keep the initial integration target explicit; add other boards deliberately.
-if(DEFINED IDF_TARGET AND NOT IDF_TARGET STREQUAL "esp32c3")
-    message(FATAL_ERROR "This bootstrap supports esp32c3 only.")
+# The target comes from the board manifest, not from a hardcoded chip.
+# string(JSON) needs CMake 3.19 and PlatformIO ships 3.16, so read the single
+# scalar field with a regex instead.
+file(READ "${DADA_HW_DIR}/board.json" DADA_MANIFEST_RAW)
+string(REGEX MATCH "\"soc\"[ \t\r\n]*:[ \t\r\n]*\"([a-zA-Z0-9_]+)\"" DADA_SOC_MATCH "${DADA_MANIFEST_RAW}")
+set(DADA_MANIFEST_SOC "${CMAKE_MATCH_1}")
+if(NOT DADA_MANIFEST_SOC)
+    message(FATAL_ERROR "board.json at ${DADA_HW_DIR} has no readable soc field")
 endif()
-set(IDF_TARGET "esp32c3")
+if(DEFINED IDF_TARGET AND NOT IDF_TARGET STREQUAL DADA_MANIFEST_SOC)
+    message(FATAL_ERROR
+        "Board manifest declares soc '${DADA_MANIFEST_SOC}' but IDF_TARGET is '${IDF_TARGET}'.")
+endif()
+set(IDF_TARGET "${DADA_MANIFEST_SOC}")
 
 # Components live at the repository root, not inside firmware/.
 # contracts/ is exposed as the `dada_contracts` component through a thin wrapper
