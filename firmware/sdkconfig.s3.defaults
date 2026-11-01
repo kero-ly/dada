@@ -6,9 +6,13 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 
 # The 8 MB PSRAM on the R8 module is octal and runs at 80 MHz.
+# 8 MB octal PSRAM on the R8 module. The stock bootloader initialises it, so the
+# app can use it as long as this matches.
 CONFIG_SPIRAM=y
 CONFIG_SPIRAM_MODE_OCT=y
 CONFIG_SPIRAM_SPEED_80M=y
+
+
 
 # Only USB is exposed; there is no UART header wired on this board.
 CONFIG_ESP_CONSOLE_UART_DEFAULT=n

@@ -5,7 +5,9 @@
 #include "dada_board_config.h"
 #include "display_st7789.h"
 #include "esp_log.h"
+#if CONFIG_SPIRAM
 #include "esp_psram.h"
+#endif
 #include "esp_timer.h"
 #include "storage_nvs.h"
 
@@ -49,12 +51,16 @@ dada_err_t board_init(dada_display_t **display, dada_input_t **input,
 {
     ESP_LOGI(TAG, "board %s (flash %d MB, psram %d MB)", DADA_BOARD_ID,
              DADA_BOARD_FLASH_MB, DADA_BOARD_PSRAM_MB);
+#if CONFIG_SPIRAM
     size_t psram = esp_psram_get_size();
     if (psram) {
         ESP_LOGI(TAG, "psram %u KB usable", (unsigned)(psram / 1024));
     } else {
         ESP_LOGW(TAG, "psram not initialised");
     }
+#else
+    ESP_LOGW(TAG, "built without psram");
+#endif
 
     if (time) {
         *time = &board_time;

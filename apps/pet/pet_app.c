@@ -32,6 +32,7 @@ static bool was_pressed;
 static uint64_t last_tick_ms;
 static int drawn_x;
 static int drawn_y;
+static int drawn_breath;
 
 static const uint16_t PALETTE[15] = {
     0xFFFF, 0xF75C, 0xCE5A, 0x9D37, 0x7C54, 0x7458, 0x5BB6, 0x5B74,
@@ -68,7 +69,7 @@ static bool load_frame(void)
 }
 
 /* Draw the portrait rotated onto the panel, shifted by the pet's offsets. */
-static dada_err_t draw(int off_x, int off_y)
+static dada_err_t draw(int off_x, int off_y, int breath_q10)
 {
     const int lw = GRID_W * CELL_PX;
     const int lh = GRID_H * CELL_PX;
@@ -81,7 +82,12 @@ static dada_err_t draw(int off_x, int off_y)
     for (int px0 = 0; px0 < phys_w; px0 += STRIPE_COLS) {
         int cols = phys_w - px0 < STRIPE_COLS ? phys_w - px0 : STRIPE_COLS;
         for (int px = px0; px < px0 + cols; px++) {
-            int ly = phys_w - 1 - px - off_y;
+            /* Breathing scales about the centre so the image expands both ways
+             * like a chest rising; the press offset is applied afterwards so
+             * being held still reads as sinking. */
+            int src = phys_w - 1 - px - off_x;
+            int mid = lh / 2;
+            int ly = mid + ((src - mid) * (512 + breath_q10)) / 512 - off_y;
             for (int py = 0; py < phys_h; py++) {
                 /* Rotation maps logical x to physical y, so the vertical motion
                  * the user sees (breathing, sinking) is an offset in logical y,
@@ -107,11 +113,15 @@ static dada_err_t draw(int off_x, int off_y)
 dada_err_t dada_app_start(const dada_app_services_t *provided)
 {
     dada_app_stop();
-    if (!provided || !provided->display || !provided->input || !provided->time) {
+    if (!provided || !provided->display || !provided->time) {
         return DADA_ERR_NOT_SUPPORTED;
     }
-    if (!provided->display->flush || !provided->input->poll ||
-        !provided->time->monotonic_ms) {
+    if (!provided->display->flush || !provided->time->monotonic_ms) {
+        return DADA_ERR_NOT_SUPPORTED;
+    }
+    /* Input is optional: without a touch panel the pet still breathes and
+     * fidgets, it just cannot be petted. */
+    if (provided->input && !provided->input->poll) {
         return DADA_ERR_NOT_SUPPORTED;
     }
     services = *provided;
@@ -126,10 +136,10 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
     last_tick_ms = now;
     was_pressed = false;
 
-    int breath = pet_breath(now);
     drawn_x = 0;
-    drawn_y = breath;
-    dada_err_t err = draw(drawn_x, drawn_y);
+    drawn_y = 0;
+    drawn_breath = pet_breath(now);
+    dada_err_t err = draw(drawn_x, drawn_y, drawn_breath);
     if (err != DADA_OK) {
         dada_app_stop();
         return err;
@@ -142,12 +152,14 @@ dada_err_t dada_app_step(void)
 {
     uint64_t now = services.time->monotonic_ms(services.time->ctx);
 
-    dada_point_t point;
-    bool pressed;
-    if (services.input->poll(services.input->ctx, &point, &pressed) &&
-        pressed != was_pressed) {
-        was_pressed = pressed;
-        pet_touch(&pet, pressed, now);
+    if (services.input) {
+        dada_point_t point;
+        bool pressed;
+        if (services.input->poll(services.input->ctx, &point, &pressed) &&
+            pressed != was_pressed) {
+            was_pressed = pressed;
+            pet_touch(&pet, pressed, now);
+        }
     }
 
     if (now - last_tick_ms < TICK_MS) {
@@ -158,15 +170,17 @@ dada_err_t dada_app_step(void)
     bool moved = pet_tick(&pet, now);
     int breath = pet_breath(now);
     int want_x = pet.offset_x;
-    int want_y = pet.offset_y + breath;
+    int want_y = pet.offset_y;
 
     /* Breathing changes every 500 ms, so compare against what is on screen. */
-    if (!moved && want_x == drawn_x && want_y == drawn_y) {
+    if (!moved && want_x == drawn_x && want_y == drawn_y &&
+        breath == drawn_breath) {
         return DADA_OK;
     }
     drawn_x = want_x;
     drawn_y = want_y;
-    return draw(drawn_x, drawn_y);
+    drawn_breath = breath;
+    return draw(drawn_x, drawn_y, drawn_breath);
 }
 
 void dada_app_stop(void)

@@ -38,5 +38,5 @@ void pet_touch(pet_t *p, bool pressed, uint64_t now_ms);
  */
 bool pet_tick(pet_t *p, uint64_t now_ms);
 
-/** Breathing displacement in cells: a slow 0..2 triangle wave. */
+/** Breathing as a vertical scale in 1/512 units: a slow 0..24 triangle wave. */
 int pet_breath(uint64_t now_ms);

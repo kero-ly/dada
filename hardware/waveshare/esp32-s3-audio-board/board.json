@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.1",
   "id": "waveshare-esp32-s3-audio-board",
-  "status": "purchased",
+  "status": "verified",
   "soc": "esp32s3",
   "hardware_revision": null,
   "flash_mb": 16,
@@ -19,22 +19,22 @@
       "sclk": 4,
       "mosi": 9,
       "dc": 7,
-      "rst": null,
+      "rst": 6,
       "cs": 3,
       "backlight": 5
     },
-    "notes": "2inch LCD Module wired to the general-purpose header. The board's own 18-pin LCD connector routes RST to TCA9555 EXIO0, so RST is tied high here and the driver uses a software reset instead."
+    "notes": "2inch LCD Module wired to the general-purpose header. The board's own 18-pin LCD connector routes RST to TCA9555 EXIO0, which is not driven yet, so RST is wired to GPIO6 instead to get a real hardware reset."
   },
   "touch": null,
   "declared_capabilities": ["storage", "time"],
-  "verified_capabilities": [],
+  "verified_capabilities": ["usb-serial-jtag", "display", "time"],
   "provenance": {
     "flash_mb": "measured",
     "psram_mb": "measured",
     "usb.mode": "measured",
     "usb.vid_pid": "measured",
-    "display": "vendor-doc",
-    "display.pins": "vendor-doc",
+    "display": "measured",
+    "display.pins": "measured",
     "soc": "vendor-doc"
   },
   "source_url": "https://www.waveshare.com/wiki/ESP32-S3-AUDIO-Board"

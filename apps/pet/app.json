@@ -1,6 +1,6 @@
 {
   "id": "pet",
   "format": "native-c-v1",
-  "requires": ["display", "input", "time"],
+  "requires": ["display", "time"],
   "display": {"min_width": 200, "min_height": 200}
 }

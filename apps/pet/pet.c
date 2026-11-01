@@ -15,12 +15,12 @@ static uint32_t next_random(pet_t *p)
 
 int pet_breath(uint64_t now_ms)
 {
-    /* Triangle wave over 3 s with a 6-pixel swing: 0 3 6 6 3 0. One or two
-     * pixels vanish into a 240-pixel-tall image, so the amplitude has to be
-     * large enough to read as breathing rather than as a rendering glitch. */
+    /* Triangle wave over 3 s, expressed as a vertical scale in 1/512 units:
+     * 0 12 24 24 12 0, i.e. up to ~4.7%. Scaling reads as a chest rising;
+     * translating the whole image just looks like the picture is sliding. */
     uint32_t phase = (uint32_t)((now_ms / 500) % 6);
     int step = phase < 3 ? (int)phase : (int)(5 - phase);
-    return step * 3;
+    return step * 12;
 }
 
 void pet_init(pet_t *p, uint64_t now_ms, uint32_t seed)

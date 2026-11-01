@@ -3,11 +3,17 @@
 Hardware-independent native C application using `contracts/app.h`.
 Chinese: [README.zh-CN.md](README.zh-CN.md).
 
-Keeps a character alive on the panel: it breathes, sinks while the screen is
-held, and shifts sideways now and then. Everything is driven by the `time`
-contract, so it works on boards with no touch panel at all.
+Shows the portrait with a slow vertical breathing scale, sinks while the screen
+is held, and shifts sideways now and then. Everything is driven by the `time`
+contract, so it runs on boards with no touch panel at all.
 
-- Breathing: a 6-pixel triangle wave over 3 s, applied while scanning out.
+**This is not a convincing desktop pet, and the reason is the artwork.** All
+motion here transforms one flat bitmap, so it reads as "the picture moves", not
+"the character moves". Translating and scaling were both tried. A real pet needs
+layered art (eyes/hair/body transformed separately) or a multi-frame sprite
+sheet.
+
+- Breathing: a vertical scale of up to ~4.7% over 3 s, about the centre.
 - Press: the portrait sinks 6 pixels and eases back when released.
 - Fidget: every 8–20 s a 1-pixel sideways nudge, then back.
 - Frame: `pet.frame` in storage if present, otherwise the shared built-in
