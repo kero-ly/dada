@@ -1,6 +1,6 @@
 # Applications
 
-Seven native C apps. All of them build only on the capability contracts, so
+Eight native C apps. All of them build only on the capability contracts, so
 none of them contains a pin number, a board name or a driver call.
 
 The fastest way in is to pick the app closest to what you want to build.
@@ -13,7 +13,8 @@ The fastest way in is to pick the app closest to what you want to build.
 | `snake` | display, input, time, **storage** | Snake with swipe steering | A 12×14 board, green snake, red food, score in the top bar | you want a complete small game |
 | `paint` | display, input, **storage** | 48×64 pixel canvas, 15 colours | An empty white canvas and a colour button in the bottom-right corner | you want to see blob storage |
 | `whale` | display, **storage** | 160×120 portrait | The portrait filling the panel; hold the board sideways | you want non-interactive rendering |
-| `flappy` | display, input, time, storage | Complete game ported onto the contracts | Sky, green pipes, ground, a yellow bird, score at the top | you want to see a project migrated |
+| `flappy` | display, input, time, storage | Complete game ported onto the contracts | Sky, green pipes, ground, a yellow bird, score at the top | you want to see a project moved | 
+| `pet` | display, time (input optional) | The portrait with a slow breathing scale and fidgets | The character, breathing; it sinks if the panel is touched | you want a long-running idle app |
 
 ## Suggested reading order
 
@@ -25,6 +26,9 @@ Easiest first; each step adds exactly one new idea:
 4. **`paint`** — adds packed blobs, a popup palette, and size-checked loading.
 5. **`whale`** — no input at all: rendering, rotation, and stripe flushing.
 6. **`flappy`** — the largest one, and a worked example of porting existing code.
+7. **`pet`** — no input required: it shows how to keep animating on a board that
+   has no touch panel at all. Its README is honest about why the result is not a
+   convincing desktop pet.
 
 `bringup` is a tool rather than a demo: reach for it when the hardware misbehaves, not to learn the pattern.
 

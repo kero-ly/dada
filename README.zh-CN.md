@@ -9,11 +9,11 @@ dada 致力于连接应用开发者与硬件生态。
 
 [开发指南](docs/development.md) · [架构路线](docs/architecture/incremental-roadmap.zh-CN.md) · [参与贡献](CONTRIBUTING.md)
 
-> 当前阶段：ESP32-C3 首板验证。以下生态和架构图展示平台愿景，已实现能力见「当前进展」。
+> 当前阶段：已完成两块板的验证（ESP32-C3 与 ESP32-S3），其中第二块没有触摸面板。以下生态和架构图展示平台愿景，已实现能力见「当前进展」。
 
 ## 我可以贡献什么？
 
-**当前支持一块 C3 一体板；“板 + 配件 + 组合”是已确认的扩展方向，尚未实现组合框架。**
+**当前支持两块板：一块 C3 一体板（板载屏与触摸），一块 S3 音箱板（外接屏、无触摸）。“板 + 配件 + 组合”仍是已确认的扩展方向，尚未实现组合框架。**
 
 | 你想做什么 | 发力点 | 入口 |
 | --- | --- | --- |
@@ -54,8 +54,8 @@ dada 致力于连接应用开发者与硬件生态。
 
 - 首板：金逸晨 ESP32-C3 + 2.4 寸 ST7789 屏 + CST836U 触摸，工具链为 PlatformIO Core 6.2.0、Espressif32 平台 6.8.1 和 **ESP-IDF v5.3.0**。
 - 已有显示、输入、单调时间、存储契约；提供 NVS 存储及板级清单配置生成。
-- 七个可选择的原生 C 应用，全部只依赖能力契约：`touch-counter`（默认）、`bringup`、
-  `focus-clock`、`snake`、`paint`、`whale`、`flappy`。各自的依赖与行为见 `apps/`。
+- 八个可选择的原生 C 应用，全部只依赖能力契约：`touch-counter`（默认）、`bringup`、
+  `focus-clock`、`snake`、`paint`、`whale`、`flappy`、`pet`。各自的依赖与行为见 `apps/`。
 - 已有实验性单应用生命周期、服务注入、应用侧共享画布、主机测试与本地交付 CLI。
 - 显示、触摸、计数器、番茄钟和贪吃蛇均有对应实机记录，见[硬件记录](tests/hardware/records/)。
 
@@ -110,7 +110,7 @@ python3 -m unittest discover -s tests/host -p 'test_*.py'
 ```
 
 见 [CONTRIBUTING.md](CONTRIBUTING.md)、[架构决策](docs/adr/README.md)与[主机工具](tools/README.md)。
-CI 编译七个应用并运行主机及清单检查；实机验收按板卡和能力查看硬件记录。
+CI 编译八个应用并运行主机及清单检查；实机验收按板卡和能力查看硬件记录。
 不上传或复制没有合适许可证的商家示例；`dada verify` 尚未实现。
 
 代码、提交信息用英文，文档逐步提供中英版本。

@@ -29,7 +29,16 @@ pio run -d firmware -e dada-c3-touch-counter
 ```
 
 PlatformIO 应报告 Core 6.2.0，构建输出应报告 Espressif32 6.8.1，固件启动日志应报告 ESP-IDF 5.3.0。构建不需要插板。
-默认板为 `jinyichen-esp32-c3-lcd-2.4`，当前仅这一块板有实现。
+默认板为 `jinyichen-esp32-c3-lcd-2.4`。目前有两块板有实现：
+
+| 板卡 | 芯片 | 显示 | 触摸 | 构建 |
+| --- | --- | --- | --- | --- |
+| `jinyichen-esp32-c3-lcd-2.4` | C3 | 板载 ST7789 240×320 | ✅ CST836U | `-e dada-c3-<app>` |
+| `waveshare-esp32-s3-audio-board` | S3 | 外接 ST7789 240×320 | ❌ | `-e dada-s3-<app>` |
+
+第二块板是音箱板飞线接了 2 寸屏，没有触摸，所以需要 input 的应用会被能力检查拒绝
+（`pet` 因此把 input 改成可选）。部署与接线见
+[板包说明](../hardware/waveshare/esp32-s3-audio-board/README.zh-CN.md)。
 产物在 `firmware/.pio/build/<environment>/`。PlatformIO 会按环境生成独立的构建目录和 `sdkconfig`，
 避免不同应用复用错误的配置；这仍不代表已经完成跨芯片配置隔离。
 

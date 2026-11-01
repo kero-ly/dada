@@ -10,7 +10,7 @@ applications; dada handles matching, building, validation and delivery.
 
 [Development guide](docs/development.md) · [Architecture roadmap](docs/architecture/incremental-roadmap.md) · [Contributing](CONTRIBUTING.md)
 
-> Stage: first-board validation on ESP32-C3. The diagrams below describe the platform vision; see Current progress for implemented capabilities.
+> Stage: two boards validated (ESP32-C3 and ESP32-S3); the second one has no touch panel. The diagrams below describe the platform vision; see Current progress for implemented capabilities.
 
 ## Where can I contribute?
 
@@ -59,9 +59,9 @@ will be evaluated incrementally. Apps may use cloud AI, local services or run en
 
 - Jinyichen ESP32-C3 + 2.4-inch ST7789 display + CST836U touch; PlatformIO Core 6.2.0, Espressif32 platform 6.8.1, and ESP-IDF **v5.3.0**.
 - Display, input, monotonic time and storage contracts; NVS storage and manifest-generated board configuration.
-- Seven selectable native C apps, all built only on the capability contracts:
+- Eight selectable native C apps, all built only on the capability contracts:
   `touch-counter` (default), `bringup`, `focus-clock`, `snake`, `paint`,
-  `whale` and `flappy`. See `apps/` for what each one needs and does.
+  `whale`, `flappy` and `pet`. See `apps/` for what each one needs and does.
 - Experimental single-app lifecycle, injected services, shared app canvas, host tests and local delivery CLI.
 - Display, touch, counter, pomodoro and Snake behaviours have board-specific acceptance records;
   see [hardware records](tests/hardware/records/).
