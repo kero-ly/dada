@@ -3,12 +3,12 @@
 使用 `contracts/app.h` 的、与硬件无关的原生 C 应用。
 English: [README.md](README.md)。
 
-![原图与面板实际显示](frames/preview.png)
+![原图与面板实际显示](../app_support/portrait/preview.png)
 
 显示一帧 160×120、15 色的画面，旋转后铺满竖屏面板——把板子横过来看就是正的。
 
-仓库内置一帧（`frames/whale-f0.h`），所以 clone 下来直接构建就能显示，不需要任何准备步骤。
-素材来源与许可见 [NOTICE.md](NOTICE.md)：它是第三方同人图，**不属于** Apache-2.0。
+仓库内置一帧（`apps/app_support/portrait/frame.h`），所以 clone 下来直接构建就能显示，不需要任何准备步骤。
+素材来源与许可见 [NOTICE.md](../app_support/portrait/NOTICE.md)：它是第三方同人图，**不属于** Apache-2.0。
 
 - 帧格式：160×120 格、4 bit/格（9600 字节），调色板与 `paint` 相同。
 - 优先级：NVS 里 `whale.f0` 有数据就用它，否则用内置帧。

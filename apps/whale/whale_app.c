@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 #include "display.h"
-#include "frames/whale-f0.h"
+#include "portrait/frame.h"
 
 
 /* The artwork is landscape: 64x48 cells of 5 px fills a 320x240 area, which
@@ -129,12 +129,12 @@ dada_err_t dada_app_start(const dada_app_services_t *provided)
 
 
     have_frames = load_frame(0, KEY_FRAME0);
-    if (!have_frames && sizeof(WHALE_FRAME) == FRAME_BYTES) {
+    if (!have_frames && sizeof(PORTRAIT_FRAME) == FRAME_BYTES) {
         /* Built-in frame: a clone of this repository works without seeding. */
         for (uint32_t i = 0; i < FRAME_BYTES; i++) {
-            frames[0][i * 2] = (uint8_t)(WHALE_FRAME[i] >> 4);
+            frames[0][i * 2] = (uint8_t)(PORTRAIT_FRAME[i] >> 4);
             if (i * 2 + 1 < FRAME_CELLS) {
-                frames[0][i * 2 + 1] = (uint8_t)(WHALE_FRAME[i] & 0x0F);
+                frames[0][i * 2 + 1] = (uint8_t)(PORTRAIT_FRAME[i] & 0x0F);
             }
         }
         have_frames = true;

@@ -3,13 +3,13 @@
 Hardware-independent native C application using `contracts/app.h`.
 Chinese: [README.zh-CN.md](README.zh-CN.md).
 
-![source artwork and what the panel shows](frames/preview.png)
+![source artwork and what the panel shows](../app_support/portrait/preview.png)
 
 Displays one 160×120 frame of 15 colours, rotated onto a portrait panel so the
 picture is upright when the board is held sideways.
 
-One frame ships in `frames/whale-f0.h`, so a fresh clone builds and displays
-without any setup step. See [NOTICE.md](NOTICE.md) for the artwork's provenance
+One frame ships in `apps/app_support/portrait/frame.h`, so a fresh clone builds and displays
+without any setup step. See [NOTICE.md](../app_support/portrait/NOTICE.md) for the artwork's provenance
 and licensing: it is third-party fan art and **not** Apache-2.0.
 
 - Frame format: 160×120 cells, 4 bits per cell (9600 bytes), same palette as

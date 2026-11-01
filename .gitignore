@@ -4,6 +4,7 @@
 **/sdkconfig
 **/sdkconfig.*
 !**/sdkconfig.defaults
+!**/sdkconfig.*.defaults
 **/sdkconfig.old
 **/managed_components/
 .venv/
